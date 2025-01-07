@@ -1,6 +1,6 @@
 package com.example.airbookingapp.air_booking_app.security.jwt;
 
-import com.example.airbookingapp.air_booking_app.security.services.CustomUserDetails;
+import com.example.airbookingapp.air_booking_app.security.services.UserDetailsImpl;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
@@ -16,7 +16,7 @@ public class JwtUtils {
     private static final Logger logger = LoggerFactory.getLogger(JwtUtils.class);
 
     public String generateJwtToken(Authentication authentication) {
-        CustomUserDetails userPrincipal = (CustomUserDetails) authentication.getPrincipal();
+        UserDetailsImpl userPrincipal = (UserDetailsImpl) authentication.getPrincipal();
 
         return Jwts.builder()
                 .setSubject((userPrincipal.getUsername()))

@@ -1,6 +1,6 @@
 package com.example.airbookingapp.air_booking_app.security.jwt;
 
-import com.example.airbookingapp.air_booking_app.security.services.CustomUserDetailsService;
+import com.example.airbookingapp.air_booking_app.security.services.UserDetailsServiceImpl;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -24,7 +24,7 @@ public class AuthTokenFilter extends OncePerRequestFilter {
     private JwtUtils jwtUtils;
 
     @Autowired
-    private CustomUserDetailsService userDetailsService;
+    private UserDetailsServiceImpl userDetailsService;
 
     private static final Logger logger = LoggerFactory.getLogger(AuthTokenFilter.class);
 
