@@ -27,17 +27,17 @@ public class UserServiceImpl implements UserService {
         if (isUsernameExist) {
             throw new RuntimeException("Username " + newUserRequest.getUsername() + " is already taken.");
         }
-        User user = userMapper.MAPPER.fromRequestToEntity(newUserRequest);
+        User user = userMapper.fromRequestToEntity(newUserRequest);
         user.setPassword(encoder.encode(user.getPassword()));
         user.setAdmin(false);
         userRepository.save(user);
-        return userMapper.MAPPER.fromEntityToResponse(user);
+        return userMapper.fromEntityToResponse(user);
     }
 
     @Override
     public UserResponse getUserByUsername(String username) {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("Username " + username + " is not found."));
-        return userMapper.MAPPER.fromEntityToResponse(user);
+        return userMapper.fromEntityToResponse(user);
     }
 }

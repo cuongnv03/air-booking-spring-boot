@@ -40,19 +40,19 @@ public class FlightServiceImpl implements FlightService {
 
     @Override
     public FlightResponse saveFlight(FlightRequest flightRequest) {
-        Flight flight = flightMapper.MAPPER.fromRequestToEntity(flightRequest);
+        Flight flight = flightMapper.fromRequestToEntity(flightRequest);
         flightRepository.save(flight);
-        return flightMapper.MAPPER.fromEntityToResponse(flight);
+        return flightMapper.fromEntityToResponse(flight);
     }
 
     @Override
     public FlightResponse updateFlight(FlightRequest flightRequest, String flightId) {
         FlightResponse checkExistingFlight = findByFlightId(flightId);
         if (checkExistingFlight != null) {
-            Flight flight = flightMapper.MAPPER.fromRequestToEntity(flightRequest);
+            Flight flight = flightMapper.fromRequestToEntity(flightRequest);
             flight.setFlightId(flightId);
             flightRepository.save(flight);
-            return flightMapper.MAPPER.fromEntityToResponse(flight);
+            return flightMapper.fromEntityToResponse(flight);
         } else {
             throw new RuntimeException("Flight ID " + flightId + " is not found.");
         }
