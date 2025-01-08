@@ -17,7 +17,7 @@ public interface FlightMapper {
         return dateTime.format(DateTimeFormatter.ISO_DATE_TIME);
     }
 
-//    @Mapping(target = "formattedDepartureTime", expression = "java(formatDateTime(flight.getDepartureTime()))")
-//    @Mapping(target = "formattedReturnTime", expression = "java(formatDateTime(flight.getReturnTime()))")
+//    @Mapping(target = "departureTime", expression = "java(formatDateTime(flight.getDepartureTime()))")
+//    @Mapping(target = "returnTime", expression = "java(formatDateTime(flight.getReturnTime()))")
     FlightResponse fromEntityToResponse(Flight flight);
 }

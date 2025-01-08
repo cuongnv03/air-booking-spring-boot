@@ -7,7 +7,7 @@ import java.util.List;
 @Data
 public class SearchFlightRequest {
     private String key;
+    private String operator;
     private String value;
-    private QueryOperator operator;
     private List<String> values;
 }
