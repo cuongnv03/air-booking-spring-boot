@@ -59,12 +59,12 @@ public class BookingServiceImpl implements BookingService {
         seatRepository.updateSeatStatus(bookingRequest.getSeatId(), "BOOKED");
 
         // Create booking record
-        Booking booking = new Booking();
-        booking.setBookingId(UUID.randomUUID().toString());
-        booking.setFlightId(bookingRequest.getFlightId());
-        booking.setSeatId(bookingRequest.getSeatId());
-        booking.setUserId(userDetails.getUserId());
-        booking.setPaymentStatus("NOT PAID");
+        Booking booking = bookingMapper.fromRequestToPojo(
+                bookingRequest,
+                userDetails.getUserId(),
+                UUID.randomUUID().toString(),
+                "NOT PAID"
+        );
 
         Booking savedBooking = bookingRepository.save(booking);
 
