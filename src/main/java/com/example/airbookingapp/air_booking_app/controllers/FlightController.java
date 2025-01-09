@@ -41,8 +41,8 @@ public class FlightController {
         return ResponseEntity.ok("Flight " + flightId + " deleted successfully");
     }
 
-    // Get all flights (for verification)
-    @GetMapping("/admin/flights")
+    // Get all flights
+    @GetMapping("/user/flights")
     public PageResponse<FlightResponse> getAllFlights(@RequestParam(value = "page", required = false, defaultValue = "1") int page,
                                                       @RequestParam(value = "size", required = false, defaultValue = "10") int size) {
         return flightService.getAllFlights(page, size);

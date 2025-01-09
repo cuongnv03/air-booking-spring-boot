@@ -2,6 +2,7 @@ package com.example.airbookingapp.air_booking_app.security.services;
 
 import com.example.airbookingapp.air_booking_app.jooq.tables.pojos.Users;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import lombok.Getter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -9,13 +10,16 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.util.*;
 
 public class UserDetailsImpl implements UserDetails {
+    @Getter
+    private final Integer userId;
     private final String username;
 
     @JsonIgnore
     private final String password;
     private final Collection<? extends GrantedAuthority> authorities;
 
-    public UserDetailsImpl(String username, String password, Collection<? extends GrantedAuthority> authorities) {
+    public UserDetailsImpl(Integer userId, String username, String password, Collection<? extends GrantedAuthority> authorities) {
+        this.userId = userId;
         this.username = username;
         this.password = password;
         this.authorities = authorities;
@@ -26,6 +30,7 @@ public class UserDetailsImpl implements UserDetails {
         authorities.add(new SimpleGrantedAuthority(user.getIsAdmin() ? "ROLE_ADMIN" : "ROLE_USER"));
 
         return new UserDetailsImpl(
+                user.getUserId(),
                 user.getUsername(),
                 user.getPassword(),
                 authorities

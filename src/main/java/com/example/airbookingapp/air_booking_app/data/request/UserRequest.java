@@ -1,4 +1,4 @@
-package com.example.airbookingapp.air_booking_app.dto.request;
+package com.example.airbookingapp.air_booking_app.data.request;
 
 import lombok.Data;
 import lombok.Getter;

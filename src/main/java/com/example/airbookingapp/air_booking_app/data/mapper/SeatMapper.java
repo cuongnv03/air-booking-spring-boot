@@ -1,7 +1,7 @@
-package com.example.airbookingapp.air_booking_app.dto.mapper;
+package com.example.airbookingapp.air_booking_app.data.mapper;
 
-import com.example.airbookingapp.air_booking_app.dto.request.SeatRequest;
-import com.example.airbookingapp.air_booking_app.dto.response.SeatResponse;
+import com.example.airbookingapp.air_booking_app.data.request.SeatRequest;
+import com.example.airbookingapp.air_booking_app.data.response.SeatResponse;
 import com.example.airbookingapp.air_booking_app.jooq.tables.pojos.Seat;
 import org.mapstruct.Mapper;
 
