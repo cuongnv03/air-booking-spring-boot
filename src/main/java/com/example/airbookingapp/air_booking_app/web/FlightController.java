@@ -25,21 +25,18 @@ public class FlightController {
 
     // Add a flight
     @PostMapping("/admin/flights/add")
-    @PreAuthorize("hasRole('ADMIN')")
     public FlightResponse addFlight(@Valid @RequestBody FlightRequest flightRequest) {
         return flightService.createFlight(flightRequest);
     }
 
     // Update flight time
     @PutMapping("/admin/flights/update-time/{flightId}")
-    @PreAuthorize("hasRole('ADMIN')")
     public FlightResponse updateFlightTime(@Valid @RequestBody FlightRequest flightRequest, @PathVariable String flightId) {
         return flightService.updateFlight(flightRequest, flightId);
     }
 
     // Delete a flight
     @DeleteMapping("/admin/flights/delete/{flightId}")
-    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<String> deleteFlight(@PathVariable String flightId) {
         flightService.deleteFlight(flightId);
         return ResponseEntity.ok("Flight " + flightId + " deleted successfully");
@@ -47,7 +44,6 @@ public class FlightController {
 
     // Get all flights (for verification)
     @GetMapping("/admin/flights")
-    @PreAuthorize("hasRole('ADMIN')")
     public PageResponse<FlightResponse> getAllFlights(@RequestParam(value = "page", required = false, defaultValue = "1") int page,
                                                       @RequestParam(value = "size", required = false, defaultValue = "10") int size) {
         return flightService.getAllFlights(page, size);
@@ -55,7 +51,6 @@ public class FlightController {
 
     // Search flights
     @GetMapping("/user/flights/search")
-    @PreAuthorize("hasRole('USER')")
     public PageResponse<FlightResponse> searchFlights(@RequestParam(value = "page", required = false, defaultValue = "1") int page,
                                                       @RequestParam(value = "size", required = false, defaultValue = "10") int size,
                                                       @Valid @RequestBody List<SearchFlightRequest> searchFlightRequests) {
