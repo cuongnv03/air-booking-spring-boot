@@ -1,4 +1,4 @@
-package com.example.airbookingapp.air_booking_app.data.response;
+package com.example.airbookingapp.air_booking_app.dto.response;
 
 import lombok.*;
 
