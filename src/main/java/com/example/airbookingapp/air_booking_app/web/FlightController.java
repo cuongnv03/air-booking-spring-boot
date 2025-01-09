@@ -22,11 +22,12 @@ public class FlightController {
     public FlightController(FlightService flightService) {
         this.flightService = flightService;
     }
+
     // Add a flight
     @PostMapping("/admin/flights/add")
     @PreAuthorize("hasRole('ADMIN')")
     public FlightResponse addFlight(@Valid @RequestBody FlightRequest flightRequest) {
-        return flightService.saveFlight(flightRequest);
+        return flightService.createFlight(flightRequest);
     }
 
     // Update flight time

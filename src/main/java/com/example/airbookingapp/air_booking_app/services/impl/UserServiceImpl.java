@@ -3,22 +3,23 @@ package com.example.airbookingapp.air_booking_app.services.impl;
 import com.example.airbookingapp.air_booking_app.dto.mapper.UserMapper;
 import com.example.airbookingapp.air_booking_app.dto.request.UserRequest;
 import com.example.airbookingapp.air_booking_app.dto.response.UserResponse;
-import com.example.airbookingapp.air_booking_app.entity.User;
+import com.example.airbookingapp.air_booking_app.jooq.tables.pojos.Users;
 import com.example.airbookingapp.air_booking_app.repositories.UserRepository;
 import com.example.airbookingapp.air_booking_app.services.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
 public class UserServiceImpl implements UserService {
-    @Autowired
-    PasswordEncoder encoder;
+
     private final UserMapper userMapper;
     private final UserRepository userRepository;
-    public UserServiceImpl(UserMapper userMapper, UserRepository userRepository) {
+    private final PasswordEncoder encoder;
+
+    public UserServiceImpl(UserMapper userMapper, UserRepository userRepository, PasswordEncoder encoder) {
         this.userMapper = userMapper;
         this.userRepository = userRepository;
+        this.encoder = encoder;
     }
 
     @Override
@@ -27,17 +28,19 @@ public class UserServiceImpl implements UserService {
         if (isUsernameExist) {
             throw new RuntimeException("Username " + newUserRequest.getUsername() + " is already taken.");
         }
-        User user = userMapper.fromRequestToEntity(newUserRequest);
+
+        Users user = userMapper.fromRequestToPojo(newUserRequest);
         user.setPassword(encoder.encode(user.getPassword()));
-        user.setAdmin(false);
-        userRepository.save(user);
-        return userMapper.fromEntityToResponse(user);
+        user.setIsAdmin(false);
+
+        Users savedUser = userRepository.save(user);
+        return userMapper.fromPojoToResponse(savedUser);
     }
 
     @Override
     public UserResponse getUserByUsername(String username) {
-        User user = userRepository.findByUsername(username)
+        Users user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("Username " + username + " is not found."));
-        return userMapper.fromEntityToResponse(user);
+        return userMapper.fromPojoToResponse(user);
     }
 }

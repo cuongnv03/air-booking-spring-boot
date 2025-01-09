@@ -8,10 +8,16 @@ import com.example.airbookingapp.air_booking_app.dto.response.PageResponse;
 import java.util.List;
 
 public interface FlightService {
+
+    FlightResponse createFlight(FlightRequest request);
+
+    FlightResponse getFlightById(String id);
+
     PageResponse<FlightResponse> getAllFlights(int page, int size);
-    FlightResponse findByFlightId(String flightId);
+
     void deleteFlight(String flightId);
-    FlightResponse saveFlight(FlightRequest flightRequest);
+
     FlightResponse updateFlight(FlightRequest flightRequest, String flightId);
-    PageResponse<FlightResponse> searchFlights(List<SearchFlightRequest> searchFlightRequests, int page, int size);
+
+    PageResponse<FlightResponse> searchFlights(List<SearchFlightRequest> filters, int page, int size);
 }

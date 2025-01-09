@@ -5,22 +5,13 @@ import com.example.airbookingapp.air_booking_app.dto.request.FlightRequest;
 import com.example.airbookingapp.air_booking_app.dto.request.SearchFlightRequest;
 import com.example.airbookingapp.air_booking_app.dto.response.FlightResponse;
 import com.example.airbookingapp.air_booking_app.dto.response.PageResponse;
-import com.example.airbookingapp.air_booking_app.entity.Flight;
+import com.example.airbookingapp.air_booking_app.jooq.tables.pojos.Flight;
 import com.example.airbookingapp.air_booking_app.repositories.FlightRepository;
 import com.example.airbookingapp.air_booking_app.services.FlightService;
 
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class FlightServiceImpl implements FlightService {
@@ -32,108 +23,66 @@ public class FlightServiceImpl implements FlightService {
     }
 
     @Override
+    public FlightResponse createFlight(FlightRequest request) {
+        Flight flight = flightMapper.fromRequestToPojo(request); // Map DTO to POJO
+        Flight savedFlight = flightRepository.save(flight);      // Save POJO via repository
+        return flightMapper.fromPojoToResponse(savedFlight);     // Map POJO to Response DTO
+    }
+
+    @Override
+    public FlightResponse getFlightById(String id) {
+        Flight flight = flightRepository.findById(id);           // Fetch POJO from repository
+        return flightMapper.fromPojoToResponse(flight);          // Map POJO to Response DTO
+    }
+
+    @Override
     public PageResponse<FlightResponse> getAllFlights(int page, int size) {
-        Pageable pageable = PageRequest.of(page-1, size, Sort.by("flightId").ascending());
-        Page<Flight> pagination = flightRepository.findAll(pageable);
+        List<Flight> flights = flightRepository.findAll(page, size); // Fetch POJOs from repository
+        long totalElements = flightRepository.count();
+        int totalPages = (int) Math.ceil((double) totalElements / size);
+
         return PageResponse.<FlightResponse>builder()
                 .currentPage(page)
-                .totalPages(pagination.getTotalPages())
+                .totalPages(totalPages)
                 .pageSize(size)
-                .totalElements(pagination.getTotalElements())
-                .data(pagination.getContent().stream().map(flightMapper::fromEntityToResponse).toList())
+                .totalElements(totalElements)
+                .data(flights.stream().map(flightMapper::fromPojoToResponse).toList()) // Map POJOs to Response DTOs
                 .build();
     }
 
     @Override
-    public FlightResponse findByFlightId(String flightId) {
-        Flight flight = flightRepository.findById(flightId)
-                .orElseThrow(() -> new RuntimeException("Flight ID " + flightId + " is not found."));
-        return flightMapper.fromEntityToResponse(flight);
-    }
-
-    @Override
     public void deleteFlight(String flightId) {
-        flightRepository.deleteById(flightId);
-    }
-
-    @Override
-    public FlightResponse saveFlight(FlightRequest flightRequest) {
-        Flight flight = flightMapper.fromRequestToEntity(flightRequest);
-        flightRepository.save(flight);
-        return flightMapper.fromEntityToResponse(flight);
-    }
-
-    @Override
-    public FlightResponse updateFlight(FlightRequest flightRequest, String flightId) {
-        FlightResponse checkExistingFlight = findByFlightId(flightId);
-        if (checkExistingFlight != null) {
-            Flight flight = flightMapper.fromRequestToEntity(flightRequest);
-            flight.setFlightId(flightId);
-            flightRepository.save(flight);
-            return flightMapper.fromEntityToResponse(flight);
-        } else {
+        if (!flightRepository.deleteById(flightId)) {
             throw new RuntimeException("Flight ID " + flightId + " is not found.");
         }
     }
 
     @Override
+    public FlightResponse updateFlight(FlightRequest flightRequest, String flightId) {
+        Flight existingFlight = flightRepository.findById(flightId);
+        if (existingFlight == null) {
+            throw new RuntimeException("Flight ID " + flightId + " is not found.");
+        }
+
+        Flight flight = flightMapper.fromRequestToPojo(flightRequest); // Map DTO to POJO
+        flight.setFlightId(flightId);
+        Flight updatedFlight = flightRepository.update(flightId, flight); // Update POJO via repository
+
+        return flightMapper.fromPojoToResponse(updatedFlight); // Map POJO to Response DTO
+    }
+
+    @Override
     public PageResponse<FlightResponse> searchFlights(List<SearchFlightRequest> filters, int page, int size) {
-        Specification<Flight> specification = buildSpecification(filters);
-        Pageable pageable = PageRequest.of(page-1, size, Sort.by("flightId").ascending());
-        Page<Flight> pagination = flightRepository.findAll(specification, pageable);
+        List<Flight> flights = flightRepository.search(filters, page, size); // Custom jOOQ implementation for search
+        long totalElements = flightRepository.countSearch(filters); // Count total matching records
+        int totalPages = (int) Math.ceil((double) totalElements / size);
+
         return PageResponse.<FlightResponse>builder()
                 .currentPage(page)
-                .totalPages(pagination.getTotalPages())
+                .totalPages(totalPages)
                 .pageSize(size)
-                .totalElements(pagination.getTotalElements())
-                .data(pagination.getContent().stream().map(flightMapper::fromEntityToResponse).toList())
+                .totalElements(totalElements)
+                .data(flights.stream().map(flightMapper::fromPojoToResponse).toList()) // Map POJOs to Response DTOs
                 .build();
     }
-
-    private Specification<Flight> buildSpecification(List<SearchFlightRequest> filters) {
-        if (filters == null || filters.isEmpty()) {
-            return Specification.where(null);
-        }
-        Specification<Flight> specification = Specification.where(createSpecification(filters.removeFirst()));
-        for (SearchFlightRequest filter : filters) {
-            specification = specification.and(createSpecification(filter));
-        }
-        return specification;
-    }
-
-    private Specification<Flight> createSpecification(SearchFlightRequest searchFlightRequest) {
-        return switch (searchFlightRequest.getOperator()) {
-            case ":" ->
-                    (root, query, criteriaBuilder) -> criteriaBuilder.equal(
-                            root.get(searchFlightRequest.getKey()), castToRequiredType(searchFlightRequest.getKey(), searchFlightRequest.getValue()));
-            case "<" ->
-                    (root, query, criteriaBuilder) -> criteriaBuilder.lessThan(
-                            root.get(searchFlightRequest.getKey()), (Comparable) castToRequiredType(searchFlightRequest.getKey(), searchFlightRequest.getValue()));
-            case ">" ->
-                    (root, query, criteriaBuilder) -> criteriaBuilder.greaterThan(
-                            root.get(searchFlightRequest.getKey()), (Comparable) castToRequiredType(searchFlightRequest.getKey(), searchFlightRequest.getValue()));
-            case "<=" ->
-                    (root, query, criteriaBuilder) -> criteriaBuilder.lessThanOrEqualTo(
-                            root.get(searchFlightRequest.getKey()), (Comparable) castToRequiredType(searchFlightRequest.getKey(), searchFlightRequest.getValue()));
-            case ">=" ->
-                    (root, query, criteriaBuilder) -> criteriaBuilder.greaterThanOrEqualTo(
-                            root.get(searchFlightRequest.getKey()), (Comparable) castToRequiredType(searchFlightRequest.getKey(), searchFlightRequest.getValue()));
-            default ->
-                    throw new IllegalArgumentException("Unsupported operator: " + searchFlightRequest.getOperator());
-        };
-    }
-
-    private Object castToRequiredType(String key, String value) {
-        if (value == null) return null;
-        return switch (key) {
-            case "departureTime", "returnTime" -> LocalDateTime.parse(value, DateTimeFormatter.ISO_DATE_TIME);
-            default -> value; // Assume string for other fields
-        };
-    }
-
-//    private List<Object> castToRequiredType(Class<?> keyType, List<String> values) {
-//        return values.stream()
-//                .map(value -> castToRequiredType(keyType, Collections.singletonList(value)))
-//                .collect(Collectors.toList());
-//    }
 }

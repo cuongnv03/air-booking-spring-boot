@@ -1,6 +1,6 @@
 package com.example.airbookingapp.air_booking_app.security.services;
 
-import com.example.airbookingapp.air_booking_app.entity.User;
+import com.example.airbookingapp.air_booking_app.jooq.tables.pojos.Users;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -9,11 +9,11 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.util.*;
 
 public class UserDetailsImpl implements UserDetails {
-    private String username;
+    private final String username;
 
     @JsonIgnore
-    private String password;
-    private Collection<? extends GrantedAuthority> authorities;
+    private final String password;
+    private final Collection<? extends GrantedAuthority> authorities;
 
     public UserDetailsImpl(String username, String password, Collection<? extends GrantedAuthority> authorities) {
         this.username = username;
@@ -21,9 +21,9 @@ public class UserDetailsImpl implements UserDetails {
         this.authorities = authorities;
     }
 
-    public static UserDetailsImpl build(User user) {
+    public static UserDetailsImpl build(Users user) {
         List<GrantedAuthority> authorities = new ArrayList<>();
-        authorities.add(new SimpleGrantedAuthority(user.isAdmin() ? "ROLE_ADMIN" : "ROLE_USER"));
+        authorities.add(new SimpleGrantedAuthority(user.getIsAdmin() ? "ROLE_ADMIN" : "ROLE_USER"));
 
         return new UserDetailsImpl(
                 user.getUsername(),

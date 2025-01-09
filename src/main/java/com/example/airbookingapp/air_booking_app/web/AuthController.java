@@ -5,40 +5,28 @@ import com.example.airbookingapp.air_booking_app.dto.response.UserResponse;
 import com.example.airbookingapp.air_booking_app.payload.JwtLoginSuccessResponse;
 import com.example.airbookingapp.air_booking_app.payload.LoginRequest;
 import com.example.airbookingapp.air_booking_app.security.jwt.JwtUtils;
-import com.example.airbookingapp.air_booking_app.security.services.UserDetailsImpl;
-import com.example.airbookingapp.air_booking_app.repositories.UserRepository;
-
 import com.example.airbookingapp.air_booking_app.services.UserService;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.security.authentication.AuthenticationManager;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/auth")
 public class AuthController {
-    @Autowired
-    AuthenticationManager authenticationManager;
 
-    @Autowired
-    UserRepository userRepository;
-
-    @Autowired
-    JwtUtils jwtUtils;
-
-    @Autowired
+    private final AuthenticationManager authenticationManager;
+    private final JwtUtils jwtUtils;
     private final UserService userService;
-    public AuthController(UserService userService) {
+
+    public AuthController(AuthenticationManager authenticationManager, JwtUtils jwtUtils, UserService userService) {
+        this.authenticationManager = authenticationManager;
+        this.jwtUtils = jwtUtils;
         this.userService = userService;
     }
+
     // Log in
     @PostMapping("/login")
     public JwtLoginSuccessResponse authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
@@ -46,10 +34,7 @@ public class AuthController {
                 new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
         SecurityContextHolder.getContext().setAuthentication(authentication);
         String jwt = jwtUtils.generateJwtToken(authentication);
-        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
-        List<String> roles = userDetails.getAuthorities().stream()
-                .map(GrantedAuthority::getAuthority)
-                .toList();
+
         return new JwtLoginSuccessResponse(true, jwt);
     }
 

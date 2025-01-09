@@ -277,8 +277,8 @@
 									<fluentSetters>true</fluentSetters>
 								</generate>
 								<target>
-									<packageName>test.generated</packageName>
-									<directory>C:\Users\CUONG\Project\air-booking-app\target\generated-sources</directory>
+									<packageName>com.example.airbookingapp.air_booking_app.jooq</packageName>
+									<directory>${project.build.directory}/generated-sources/jooq</directory>
 								</target>
 							</generator>
 						</configuration>

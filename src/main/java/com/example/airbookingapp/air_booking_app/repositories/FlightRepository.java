@@ -1,14 +1,149 @@
 package com.example.airbookingapp.air_booking_app.repositories;
 
-import com.example.airbookingapp.air_booking_app.entity.Flight;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.domain.Specification;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import com.example.airbookingapp.air_booking_app.dto.request.SearchFlightRequest;
+import com.example.airbookingapp.air_booking_app.jooq.Tables;
+import com.example.airbookingapp.air_booking_app.jooq.tables.pojos.Flight;
+import com.example.airbookingapp.air_booking_app.jooq.tables.records.FlightRecord;
+import org.jooq.Condition;
+import org.jooq.DSLContext;
+import org.jooq.Field;
+import org.jooq.impl.DSL;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
+
 @Repository
-public interface FlightRepository extends JpaRepository<Flight, String>, JpaSpecificationExecutor<Flight> {
-    public abstract Page<Flight> findAll(Specification<Flight> specification, Pageable pageable);
+public class FlightRepository {
+
+    private final DSLContext dsl;
+
+    public FlightRepository(DSLContext dsl) {
+        this.dsl = dsl;
+    }
+
+    // Save a new flight
+    public Flight save(Flight flight) {
+        FlightRecord record = dsl.newRecord(Tables.FLIGHT);
+        record.from(flight); // Map POJO to Record
+        record.store();      // Save to DB
+        return record.into(Flight.class); // Convert back to POJO
+    }
+
+    // Find a flight by ID
+    public Flight findById(String id) {
+        FlightRecord record = dsl
+                .selectFrom(Tables.FLIGHT)
+                .where(Tables.FLIGHT.FLIGHT_ID.eq(id))
+                .fetchOne();
+        return record.into(Flight.class); // Convert Record to POJO
+    }
+
+    // Find all flights with pagination
+    public List<Flight> findAll(int page, int size) {
+        return dsl.selectFrom(Tables.FLIGHT)
+                .limit(size)
+                .offset((page - 1) * size)
+                .fetchInto(Flight.class); // Convert fetched records to POJOs
+    }
+
+    // Delete a flight by ID
+    public boolean deleteById(String flightId) {
+        int rowsAffected = dsl.deleteFrom(Tables.FLIGHT)
+                .where(Tables.FLIGHT.FLIGHT_ID.eq(flightId))
+                .execute();
+        return rowsAffected > 0; // Return true if a record was deleted
+    }
+
+    // Update an existing flight
+    public Flight update(String flightId, Flight flight) {
+        FlightRecord record = dsl.newRecord(Tables.FLIGHT);
+        record.from(flight); // Map POJO to Record
+        int rowsAffected = dsl.update(Tables.FLIGHT)
+                .set(record)
+                .where(Tables.FLIGHT.FLIGHT_ID.eq(flightId))
+                .execute();
+
+        if (rowsAffected > 0) {
+            return findById(flightId); // Return the updated flight as a POJO
+        } else {
+            throw new IllegalStateException("Flight with ID " + flightId + " not found.");
+        }
+    }
+
+    // Count the total number of flights (for pagination purposes)
+    public long count() {
+        return dsl.fetchCount(Tables.FLIGHT); // Count the total number of rows in the table
+    }
+
+    // Search for flights based on filters
+    public List<Flight> search(List<SearchFlightRequest> filters, int page, int size) {
+        Condition condition = buildCondition(filters); // Build jOOQ condition from filters
+        return dsl.selectFrom(Tables.FLIGHT)
+                .where(condition)
+                .limit(size)
+                .offset((page - 1) * size)
+                .fetchInto(Flight.class); // Fetch results into POJOs
+    }
+
+    // Build a jOOQ condition from a list of filters
+    public long countSearch(List<SearchFlightRequest> filters) {
+        Condition condition = buildCondition(filters); // Build jOOQ condition from filters
+        return dsl.fetchCount(dsl.selectFrom(Tables.FLIGHT).where(condition));
+    }
+
+    // Build jOOQ Condition from Filters
+    private Condition buildCondition(List<SearchFlightRequest> filters) {
+        if (filters == null || filters.isEmpty()) {
+            return DSL.noCondition(); // Return no condition if filters are empty
+        }
+
+        Condition condition = createCondition(filters.remove(0));
+        for (SearchFlightRequest filter : filters) {
+            condition = condition.and(createCondition(filter));
+        }
+        return condition;
+    }
+
+    // Create jOOQ Condition from Single Filter
+    private Condition createCondition(SearchFlightRequest filter) {
+        // Determine the field and its expected type dynamically
+        Field<Object> field = Tables.FLIGHT.field(filter.getKey(), Object.class); // Generic Field
+        if (field == null) {
+            throw new IllegalArgumentException("Invalid field key: " + filter.getKey());
+        }
+        Object castedValue = castToRequiredType(filter.getKey(), filter.getValue());
+
+        switch (filter.getOperator()) {
+            case ":":
+                return field.eq(castedValue); // Equal condition
+            case "<":
+                return field.lt((Comparable<?>) castedValue); // Less than condition
+            case ">":
+                return field.gt((Comparable<?>) castedValue); // Greater than condition
+            case "<=":
+                return field.le((Comparable<?>) castedValue); // Less than or equal condition
+            case ">=":
+                return field.ge((Comparable<?>) castedValue); // Greater than or equal condition
+            default:
+                throw new IllegalArgumentException("Unsupported operator: " + filter.getOperator());
+        }
+    }
+
+    // Cast Values to Required Type for jOOQ Condition
+    private Object castToRequiredType(String key, String value) {
+        if (value == null) return null;
+        return switch (key) {
+            case "departure_time", "return_time" ->
+                    LocalDateTime.parse(value, DateTimeFormatter.ISO_DATE_TIME); // Cast to LocalDateTime
+            case "duration" -> Integer.parseInt(value); // Example: Cast to Integer if needed
+            default -> value; // Assume string for other fields
+        };
+    }
+//    private List<Object> castToRequiredType(Class<?> keyType, List<String> values) {
+//        return values.stream()
+//                .map(value -> castToRequiredType(keyType, Collections.singletonList(value)))
+//                .collect(Collectors.toList());
+//    }
 }
