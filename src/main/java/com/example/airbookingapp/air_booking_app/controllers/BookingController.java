@@ -26,13 +26,6 @@ public class BookingController {
         return ResponseEntity.ok(bookingResponse);
     }
 
-    // Get a booking by ID
-    @GetMapping("/admin/bookings/{bookingId}")
-    public ResponseEntity<BookingResponse> getBookingById(@PathVariable String bookingId) {
-        BookingResponse bookingResponse = bookingService.findBookingById(bookingId);
-        return ResponseEntity.ok(bookingResponse);
-    }
-
     // Get all bookings for the authenticated user
     @GetMapping("/user/bookings")
     public ResponseEntity<List<BookingResponse>> getUserBookings() {

@@ -33,14 +33,6 @@ public class SeatController {
         return ResponseEntity.ok(availableSeats);
     }
 
-    // Update seat status (e.g., "BOOKED" or "NOT BOOKED")
-    @PutMapping("/admin/seats/{seatId}/status")
-    public ResponseEntity<SeatResponse> updateSeatStatus(@PathVariable String seatId,
-                                                         @Valid @RequestBody SeatRequest seatRequest) {
-        SeatResponse updatedSeat = seatService.updateSeatStatus(seatId, seatRequest.getSeatStatus());
-        return ResponseEntity.ok(updatedSeat);
-    }
-
     // Update other seat attributes (e.g., baggage allowance, price)
     @PutMapping("/admin/seats/{seatId}/attributes")
     public ResponseEntity<SeatResponse> updateSeatAttributes(@PathVariable String seatId,
