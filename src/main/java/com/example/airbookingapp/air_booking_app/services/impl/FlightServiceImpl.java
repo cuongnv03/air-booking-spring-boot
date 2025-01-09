@@ -1,10 +1,10 @@
 package com.example.airbookingapp.air_booking_app.services.impl;
 
-import com.example.airbookingapp.air_booking_app.dto.mapper.FlightMapper;
-import com.example.airbookingapp.air_booking_app.dto.request.FlightRequest;
-import com.example.airbookingapp.air_booking_app.dto.request.SearchFlightRequest;
-import com.example.airbookingapp.air_booking_app.dto.response.FlightResponse;
-import com.example.airbookingapp.air_booking_app.dto.response.PageResponse;
+import com.example.airbookingapp.air_booking_app.data.mapper.FlightMapper;
+import com.example.airbookingapp.air_booking_app.data.request.FlightRequest;
+import com.example.airbookingapp.air_booking_app.data.request.SearchFlightRequest;
+import com.example.airbookingapp.air_booking_app.data.response.FlightResponse;
+import com.example.airbookingapp.air_booking_app.data.response.PageResponse;
 import com.example.airbookingapp.air_booking_app.jooq.tables.pojos.Flight;
 import com.example.airbookingapp.air_booking_app.repositories.FlightRepository;
 import com.example.airbookingapp.air_booking_app.services.FlightService;

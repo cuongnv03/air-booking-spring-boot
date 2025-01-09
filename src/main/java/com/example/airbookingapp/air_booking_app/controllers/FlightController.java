@@ -1,13 +1,12 @@
-package com.example.airbookingapp.air_booking_app.web;
+package com.example.airbookingapp.air_booking_app.controllers;
 
-import com.example.airbookingapp.air_booking_app.dto.request.FlightRequest;
-import com.example.airbookingapp.air_booking_app.dto.request.SearchFlightRequest;
-import com.example.airbookingapp.air_booking_app.dto.response.FlightResponse;
-import com.example.airbookingapp.air_booking_app.dto.response.PageResponse;
+import com.example.airbookingapp.air_booking_app.data.request.FlightRequest;
+import com.example.airbookingapp.air_booking_app.data.request.SearchFlightRequest;
+import com.example.airbookingapp.air_booking_app.data.response.FlightResponse;
+import com.example.airbookingapp.air_booking_app.data.response.PageResponse;
 import com.example.airbookingapp.air_booking_app.services.FlightService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;

@@ -1,7 +1,7 @@
-package com.example.airbookingapp.air_booking_app.web;
+package com.example.airbookingapp.air_booking_app.controllers;
 
-import com.example.airbookingapp.air_booking_app.dto.request.UserRequest;
-import com.example.airbookingapp.air_booking_app.dto.response.UserResponse;
+import com.example.airbookingapp.air_booking_app.data.request.UserRequest;
+import com.example.airbookingapp.air_booking_app.data.response.UserResponse;
 import com.example.airbookingapp.air_booking_app.payload.JwtLoginSuccessResponse;
 import com.example.airbookingapp.air_booking_app.payload.LoginRequest;
 import com.example.airbookingapp.air_booking_app.security.jwt.JwtUtils;

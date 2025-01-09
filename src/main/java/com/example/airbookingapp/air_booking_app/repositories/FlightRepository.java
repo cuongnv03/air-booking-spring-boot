@@ -1,6 +1,6 @@
 package com.example.airbookingapp.air_booking_app.repositories;
 
-import com.example.airbookingapp.air_booking_app.dto.request.SearchFlightRequest;
+import com.example.airbookingapp.air_booking_app.data.request.SearchFlightRequest;
 import com.example.airbookingapp.air_booking_app.jooq.Tables;
 import com.example.airbookingapp.air_booking_app.jooq.tables.pojos.Flight;
 import com.example.airbookingapp.air_booking_app.jooq.tables.records.FlightRecord;
