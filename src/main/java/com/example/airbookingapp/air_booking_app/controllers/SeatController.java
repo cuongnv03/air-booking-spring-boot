@@ -39,8 +39,7 @@ public class SeatController {
                                                              @Valid @RequestBody SeatRequest seatRequest) {
         SeatResponse updatedSeat = seatService.updateSeatAttributes(
                 seatId,
-                seatRequest.getBaggageAllowance(),
-                seatRequest.getPrice()
+                seatRequest
         );
         return ResponseEntity.ok(updatedSeat);
     }

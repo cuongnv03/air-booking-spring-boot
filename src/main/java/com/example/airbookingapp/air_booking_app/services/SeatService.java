@@ -1,5 +1,6 @@
 package com.example.airbookingapp.air_booking_app.services;
 
+import com.example.airbookingapp.air_booking_app.data.request.SeatRequest;
 import com.example.airbookingapp.air_booking_app.data.response.SeatResponse;
 
 import java.util.List;
@@ -15,5 +16,5 @@ public interface SeatService {
     SeatResponse updateSeatStatus(String seatId, String status);
 
     // Update other seat attributes (e.g., baggage allowance, price)
-    SeatResponse updateSeatAttributes(String seatId, int baggageAllowance, int price);
+    SeatResponse updateSeatAttributes(String seatId, SeatRequest seatRequest);
 }

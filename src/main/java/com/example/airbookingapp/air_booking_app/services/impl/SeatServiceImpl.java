@@ -1,6 +1,7 @@
 package com.example.airbookingapp.air_booking_app.services.impl;
 
 import com.example.airbookingapp.air_booking_app.data.mapper.SeatMapper;
+import com.example.airbookingapp.air_booking_app.data.request.SeatRequest;
 import com.example.airbookingapp.air_booking_app.data.response.SeatResponse;
 import com.example.airbookingapp.air_booking_app.jooq.tables.pojos.Seat;
 import com.example.airbookingapp.air_booking_app.repositories.SeatRepository;
@@ -48,11 +49,14 @@ public class SeatServiceImpl implements SeatService {
     }
 
     @Override
-    public SeatResponse updateSeatAttributes(String seatId, int baggageAllowance, int price) {
-        int rowsAffected = seatRepository.updateSeatAttributes(seatId, baggageAllowance, price);
-        if (rowsAffected == 0) {
-            throw new RuntimeException("Failed to update attributes for seat ID " + seatId);
-        }
-        return getSeatDetails(seatId);
+    public SeatResponse updateSeatAttributes(String seatId, SeatRequest seatRequest) {
+       Seat existingSeat = seatRepository.findById(seatId);
+         if (existingSeat == null) {
+              throw new RuntimeException("Seat with ID " + seatId + " not found.");
+         }
+         seatMapper.fromRequestToPojo(seatRequest);
+         existingSeat.setSeatId(seatId);
+         Seat updatedSeat = seatRepository.updateSeatAttributes(seatId, existingSeat);
+         return seatMapper.fromPojoToResponse(updatedSeat);
     }
 }

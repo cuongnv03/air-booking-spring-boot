@@ -63,12 +63,14 @@ public class FlightServiceImpl implements FlightService {
         if (existingFlight == null) {
             throw new RuntimeException("Flight ID " + flightId + " is not found.");
         }
-
-        Flight flight = flightMapper.fromRequestToPojo(flightRequest); // Map DTO to POJO
-        flight.setFlightId(flightId);
-        Flight updatedFlight = flightRepository.update(flightId, flight); // Update POJO via repository
-
-        return flightMapper.fromPojoToResponse(updatedFlight); // Map POJO to Response DTO
+        // Use MapStruct to update existingFlight with values from flightRequest
+        flightMapper.updateFromRequestToPojo(flightRequest, existingFlight);
+        // Ensure the flightId remains unchanged
+        existingFlight.setFlightId(flightId);
+        // Persist changes
+        Flight updatedFlight = flightRepository.update(flightId, existingFlight);
+        // Convert updatedFlight to Response DTO
+        return flightMapper.fromPojoToResponse(updatedFlight);
     }
 
     @Override
