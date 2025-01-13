@@ -54,7 +54,7 @@ public class SeatServiceImpl implements SeatService {
          if (existingSeat == null) {
               throw new RuntimeException("Seat with ID " + seatId + " not found.");
          }
-         seatMapper.fromRequestToPojo(seatRequest);
+         seatMapper.updateFromRequestToPojo(seatRequest, existingSeat);
          existingSeat.setSeatId(seatId);
          Seat updatedSeat = seatRepository.updateSeatAttributes(seatId, existingSeat);
          return seatMapper.fromPojoToResponse(updatedSeat);

@@ -53,7 +53,7 @@ public class SeatRepository {
         if (rowsAffected > 0) {
             return findById(seatId); // Return the updated flight as a POJO
         } else {
-            throw new IllegalStateException("Flight with ID " + seatId + " not found.");
+            throw new IllegalStateException("Seat with ID " + seatId + " not found.");
         }
     }
 }

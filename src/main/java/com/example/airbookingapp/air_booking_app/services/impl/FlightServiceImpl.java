@@ -4,13 +4,16 @@ import com.example.airbookingapp.air_booking_app.data.mapper.FlightMapper;
 import com.example.airbookingapp.air_booking_app.data.request.FlightRequest;
 import com.example.airbookingapp.air_booking_app.data.request.SearchFlightRequest;
 import com.example.airbookingapp.air_booking_app.data.response.FlightResponse;
-import com.example.airbookingapp.air_booking_app.data.response.PageResponse;
 import com.example.airbookingapp.air_booking_app.jooq.tables.pojos.Flight;
 import com.example.airbookingapp.air_booking_app.repositories.FlightRepository;
 import com.example.airbookingapp.air_booking_app.services.FlightService;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -36,18 +39,10 @@ public class FlightServiceImpl implements FlightService {
     }
 
     @Override
-    public PageResponse<FlightResponse> getAllFlights(int page, int size) {
-        List<Flight> flights = flightRepository.findAll(page, size); // Fetch POJOs from repository
-        long totalElements = flightRepository.count();
-        int totalPages = (int) Math.ceil((double) totalElements / size);
-
-        return PageResponse.<FlightResponse>builder()
-                .currentPage(page)
-                .totalPages(totalPages)
-                .pageSize(size)
-                .totalElements(totalElements)
-                .data(flights.stream().map(flightMapper::fromPojoToResponse).toList()) // Map POJOs to Response DTOs
-                .build();
+    public List<Page<FlightResponse>> getAllFlights(int sizePerPage) {
+        List<Flight> flights = flightRepository.findAll(); // Fetch POJOs from repository
+        List<FlightResponse> listFlights = flights.stream().map(flightMapper::fromPojoToResponse).toList(); // Map POJOs to Response DTOs
+        return getPages(sizePerPage, listFlights);
     }
 
     @Override
@@ -74,17 +69,24 @@ public class FlightServiceImpl implements FlightService {
     }
 
     @Override
-    public PageResponse<FlightResponse> searchFlights(List<SearchFlightRequest> filters, int page, int size) {
-        List<Flight> flights = flightRepository.search(filters, page, size); // Custom jOOQ implementation for search
-        long totalElements = flightRepository.countSearch(filters); // Count total matching records
-        int totalPages = (int) Math.ceil((double) totalElements / size);
+    public List<Page<FlightResponse>> searchFlights(List<SearchFlightRequest> filters, int sizePerPage) {
+        List<Flight> flights = flightRepository.search(filters); // Custom jOOQ implementation for search
+        List<FlightResponse> listFlights = flights.stream().map(flightMapper::fromPojoToResponse).toList(); // Map POJOs to Response DTOs
+        return getPages(sizePerPage, listFlights);
+    }
 
-        return PageResponse.<FlightResponse>builder()
-                .currentPage(page)
-                .totalPages(totalPages)
-                .pageSize(size)
-                .totalElements(totalElements)
-                .data(flights.stream().map(flightMapper::fromPojoToResponse).toList()) // Map POJOs to Response DTOs
-                .build();
+    private List<Page<FlightResponse>> getPages(int sizePerPage, List<FlightResponse> listFlights) {
+        List<Page<FlightResponse>> result = new ArrayList<>();
+        int totalFlights = listFlights.size();
+        int totalPages = (int) Math.ceil((double) totalFlights / sizePerPage);
+        for (int i = 0; i < totalPages; i++) {
+            int start = i * sizePerPage;
+            int end = Math.min(start + sizePerPage, totalFlights);
+
+            List<FlightResponse> pageContent = listFlights.subList(start, end);
+            Page<FlightResponse> page = new PageImpl<>(pageContent, PageRequest.of(i, sizePerPage), totalFlights);
+            result.add(page);
+        }
+        return result;
     }
 }

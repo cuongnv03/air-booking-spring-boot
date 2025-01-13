@@ -37,14 +37,13 @@ public class FlightRepository {
                 .selectFrom(Tables.FLIGHT)
                 .where(Tables.FLIGHT.FLIGHT_ID.eq(id))
                 .fetchOne();
+        assert record != null;
         return record.into(Flight.class); // Convert Record to POJO
     }
 
     // Find all flights with pagination
-    public List<Flight> findAll(int page, int size) {
+    public List<Flight> findAll() {
         return dsl.selectFrom(Tables.FLIGHT)
-                .limit(size)
-                .offset((page - 1) * size)
                 .fetchInto(Flight.class); // Convert fetched records to POJOs
     }
 
@@ -78,12 +77,10 @@ public class FlightRepository {
     }
 
     // Search for flights based on filters
-    public List<Flight> search(List<SearchFlightRequest> filters, int page, int size) {
+    public List<Flight> search(List<SearchFlightRequest> filters) {
         Condition condition = buildCondition(filters); // Build jOOQ condition from filters
         return dsl.selectFrom(Tables.FLIGHT)
                 .where(condition)
-                .limit(size)
-                .offset((page - 1) * size)
                 .fetchInto(Flight.class); // Fetch results into POJOs
     }
 
@@ -99,7 +96,7 @@ public class FlightRepository {
             return DSL.noCondition(); // Return no condition if filters are empty
         }
 
-        Condition condition = createCondition(filters.remove(0));
+        Condition condition = createCondition(filters.removeFirst());
         for (SearchFlightRequest filter : filters) {
             condition = condition.and(createCondition(filter));
         }
@@ -115,20 +112,14 @@ public class FlightRepository {
         }
         Object castedValue = castToRequiredType(filter.getKey(), filter.getValue());
 
-        switch (filter.getOperator()) {
-            case ":":
-                return field.eq(castedValue); // Equal condition
-            case "<":
-                return field.lt((Comparable<?>) castedValue); // Less than condition
-            case ">":
-                return field.gt((Comparable<?>) castedValue); // Greater than condition
-            case "<=":
-                return field.le((Comparable<?>) castedValue); // Less than or equal condition
-            case ">=":
-                return field.ge((Comparable<?>) castedValue); // Greater than or equal condition
-            default:
-                throw new IllegalArgumentException("Unsupported operator: " + filter.getOperator());
-        }
+        return switch (filter.getOperator()) {
+            case ":" -> field.eq(castedValue); // Equal condition
+            case "<" -> field.lt((Comparable<?>) castedValue); // Less than condition
+            case ">" -> field.gt((Comparable<?>) castedValue); // Greater than condition
+            case "<=" -> field.le((Comparable<?>) castedValue); // Less than or equal condition
+            case ">=" -> field.ge((Comparable<?>) castedValue); // Greater than or equal condition
+            default -> throw new IllegalArgumentException("Unsupported operator: " + filter.getOperator());
+        };
     }
 
     // Cast Values to Required Type for jOOQ Condition
@@ -141,9 +132,4 @@ public class FlightRepository {
             default -> value; // Assume string for other fields
         };
     }
-//    private List<Object> castToRequiredType(Class<?> keyType, List<String> values) {
-//        return values.stream()
-//                .map(value -> castToRequiredType(keyType, Collections.singletonList(value)))
-//                .collect(Collectors.toList());
-//    }
 }

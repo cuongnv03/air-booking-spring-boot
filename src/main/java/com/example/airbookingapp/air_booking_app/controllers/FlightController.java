@@ -3,9 +3,9 @@ package com.example.airbookingapp.air_booking_app.controllers;
 import com.example.airbookingapp.air_booking_app.data.request.FlightRequest;
 import com.example.airbookingapp.air_booking_app.data.request.SearchFlightRequest;
 import com.example.airbookingapp.air_booking_app.data.response.FlightResponse;
-import com.example.airbookingapp.air_booking_app.data.response.PageResponse;
 import com.example.airbookingapp.air_booking_app.services.FlightService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -43,16 +43,14 @@ public class FlightController {
 
     // Get all flights
     @GetMapping("/user/flights")
-    public PageResponse<FlightResponse> getAllFlights(@RequestParam(value = "page", required = false, defaultValue = "1") int page,
-                                                      @RequestParam(value = "size", required = false, defaultValue = "10") int size) {
-        return flightService.getAllFlights(page, size);
+    public List<Page<FlightResponse>> getAllFlights(@RequestParam(value = "sizePerPage", required = false, defaultValue = "10") int sizePerPage) {
+        return flightService.getAllFlights(sizePerPage);
     }
 
     // Search flights
     @GetMapping("/user/flights/search")
-    public PageResponse<FlightResponse> searchFlights(@RequestParam(value = "page", required = false, defaultValue = "1") int page,
-                                                      @RequestParam(value = "size", required = false, defaultValue = "10") int size,
+    public List<Page<FlightResponse>> searchFlights(@RequestParam(value = "sizePerPage", required = false, defaultValue = "10") int sizePerPage,
                                                       @Valid @RequestBody List<SearchFlightRequest> searchFlightRequests) {
-        return flightService.searchFlights(searchFlightRequests, page, size);
+        return flightService.searchFlights(searchFlightRequests, sizePerPage);
     }
 }

@@ -10,9 +10,9 @@ import org.mapstruct.NullValuePropertyMappingStrategy;
 
 @Mapper(componentModel = "spring", nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
 public interface FlightMapper {
+    @Mapping(target = "flightId", ignore = true)
     Flight fromRequestToPojo(FlightRequest flightRequest);
     FlightResponse fromPojoToResponse(Flight flight);
 
-    @Mapping(target = "flightId", source = "flightId") // Keep flightId unchanged
     void updateFromRequestToPojo(FlightRequest flightRequest, @MappingTarget Flight flight);
 }
