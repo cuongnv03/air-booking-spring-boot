@@ -11,6 +11,7 @@ import org.mapstruct.MappingTarget;
 public interface SeatMapper {
 
     // Map từ Seat (POJO) sang SeatResponse (DTO)
+    @Mapping(target = "seatId", source = "id")
     SeatResponse fromPojoToResponse(Seat seat);
 
     @Mapping(target = "id", ignore = true) // ID được cung cấp bởi hệ thống

@@ -49,15 +49,15 @@ public class FlightServiceImpl implements FlightService {
     }
 
     @Override
-    public List<Page<FlightResponse>> getAllFlights(int sizePerPage) {
+    public Page<FlightResponse> getAllFlights(int page, int size) {
         // Lấy danh sách tất cả chuyến bay
-        List<Flight> flights = flightRepository.findAll();
+        List<Flight> flights = flightRepository.findAll(page, size);
         // Ánh xạ từ POJO sang Response DTO
         List<FlightResponse> flightResponses = flights.stream()
                 .map(flightMapper::fromPojoToResponse)
                 .collect(Collectors.toList());
-        // Chia thành các trang
-        return paginate(flightResponses, sizePerPage);
+        long totalItems = flightRepository.count();
+        return new PageImpl<>(flightResponses, PageRequest.of(page, size), totalItems);
     }
 
     @Override
@@ -84,15 +84,16 @@ public class FlightServiceImpl implements FlightService {
     }
 
     @Override
-    public List<Page<FlightResponse>> searchFlights(List<SearchFlightRequest> filters, int sizePerPage) {
+    public Page<FlightResponse> searchFlights(List<SearchFlightRequest> filters, int page, int size) {
         // Tìm kiếm chuyến bay dựa trên các bộ lọc
-        List<Flight> flights = flightRepository.search(filters);
+        List<Flight> flights = flightRepository.search(filters, page, size);
         // Ánh xạ từ POJO sang Response DTO
         List<FlightResponse> flightResponses = flights.stream()
                 .map(flightMapper::fromPojoToResponse)
                 .collect(Collectors.toList());
+        long totalItems = flightRepository.countSearch(filters);
         // Chia thành các trang
-        return paginate(flightResponses, sizePerPage);
+        return new PageImpl<>(flightResponses, PageRequest.of(page, size), totalItems);
     }
 
     // Hàm phụ để chia dữ liệu thành các trang
@@ -110,5 +111,4 @@ public class FlightServiceImpl implements FlightService {
         }
         return pages;
     }
-
 }

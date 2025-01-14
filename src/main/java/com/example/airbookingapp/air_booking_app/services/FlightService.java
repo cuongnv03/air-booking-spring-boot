@@ -13,11 +13,11 @@ public interface FlightService {
 
     FlightResponse getFlightById(String id);
 
-    List<Page<FlightResponse>> getAllFlights(int sizePerPage);
+    Page<FlightResponse> getAllFlights(int page, int size);
 
     void deleteFlight(String flightId);
 
     FlightResponse updateFlight(FlightRequest flightRequest, String flightId);
 
-    List<Page<FlightResponse>> searchFlights(List<SearchFlightRequest> filters, int sizePerPage);
+    Page<FlightResponse> searchFlights(List<SearchFlightRequest> filters, int page, int size);
 }

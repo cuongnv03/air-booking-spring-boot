@@ -6,7 +6,6 @@ import java.time.LocalDateTime;
 
 @Data
 public class BookingResponse {
-
     private String bookingId; // Mã định danh duy nhất cho booking
     private String flightId; // Mã chuyến bay liên quan đến booking
     private Integer seatId; // ID ghế liên quan đến booking

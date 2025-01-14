@@ -41,9 +41,11 @@ public class FlightRepository {
     }
 
     // Tìm tất cả các chuyến bay
-    public List<Flight> findAll() {
+    public List<Flight> findAll(int page, int size) {
         return dsl.selectFrom(Tables.FLIGHT)
-                .orderBy(Tables.FLIGHT.SCHEDULED_TIME)
+                .orderBy(Tables.FLIGHT.FLIGHT_ID.desc())
+                .limit(size)
+                .offset(page * size)
                 .fetchInto(Flight.class);
     }
 
@@ -77,10 +79,12 @@ public class FlightRepository {
     }
 
     // Tìm kiếm chuyến bay theo bộ lọc
-    public List<Flight> search(List<SearchFlightRequest> filters) {
+    public List<Flight> search(List<SearchFlightRequest> filters, int page, int size) {
         Condition condition = buildCondition(filters);
         return dsl.selectFrom(Tables.FLIGHT)
                 .where(condition)
+                .limit(size)
+                .offset(page * size)
                 .fetchInto(Flight.class);
     }
 

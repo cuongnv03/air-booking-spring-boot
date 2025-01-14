@@ -46,17 +46,19 @@ public class FlightController {
 
     // Lấy danh sách tất cả các chuyến bay
     @GetMapping("/flights")
-    public ResponseEntity<List<Page<FlightResponse>>> getAllFlights(@RequestParam(value = "sizePerPage", defaultValue = "10") int sizePerPage) {
-        List<Page<FlightResponse>> response = flightService.getAllFlights(sizePerPage);
+    public ResponseEntity<Page<FlightResponse>> getAllFlights(@RequestParam(value = "page", defaultValue = "0") int page,
+                                                              @RequestParam(value = "size", defaultValue = "10") int size){
+        Page<FlightResponse> response = flightService.getAllFlights(page, size);
         return ResponseEntity.ok(response);
     }
 
     // Tìm kiếm chuyến bay theo tiêu chí
     @PostMapping("/flights/search")
-    public ResponseEntity<List<Page<FlightResponse>>> searchFlights(
+    public ResponseEntity<Page<FlightResponse>> searchFlights(
             @RequestBody List<SearchFlightRequest> searchFlightRequests,
-            @RequestParam(value = "sizePerPage", defaultValue = "10") int sizePerPage) {
-        List<Page<FlightResponse>> response = flightService.searchFlights(searchFlightRequests, sizePerPage);
+            @RequestParam(value = "page", defaultValue = "0") int page,
+            @RequestParam(value = "size", defaultValue = "10") int size){
+        Page<FlightResponse> response = flightService.searchFlights(searchFlightRequests, page, size);
         return ResponseEntity.ok(response);
     }
 

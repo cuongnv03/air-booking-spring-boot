@@ -6,13 +6,9 @@ import jakarta.validation.constraints.NotNull;
 
 @Data
 public class BookingRequest {
-
     @NotNull(message = "Flight ID cannot be null")
     private String flightId;
 
     @NotNull(message = "Seat ID cannot be null")
     private Integer seatId;
-
-    @NotNull(message = "User ID cannot be null")
-    private Integer userId;
 }

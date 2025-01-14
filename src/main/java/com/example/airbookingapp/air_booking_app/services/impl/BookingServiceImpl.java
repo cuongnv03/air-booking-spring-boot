@@ -54,7 +54,7 @@ public class BookingServiceImpl implements BookingService {
         // Update seat status to "BOOKED"
         seatRepository.updateSeatStatus(bookingRequest.getFlightId(), bookingRequest.getSeatId(), true);
         // Create booking record
-        Booking booking = bookingMapper.fromRequestToPojo(bookingRequest);
+        Booking booking = bookingMapper.fromRequestToPojo(bookingRequest, userDetails.getUserId());
         Booking savedBooking = bookingRepository.save(booking);
         // Convert to response DTO
         return bookingMapper.fromPojoToResponse(savedBooking);
