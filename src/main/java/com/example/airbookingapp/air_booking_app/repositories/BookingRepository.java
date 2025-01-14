@@ -2,6 +2,7 @@ package com.example.airbookingapp.air_booking_app.repositories;
 
 import com.example.airbookingapp.air_booking_app.jooq.Tables;
 import com.example.airbookingapp.air_booking_app.jooq.tables.pojos.Booking;
+import com.example.airbookingapp.air_booking_app.jooq.tables.pojos.Flight;
 import com.example.airbookingapp.air_booking_app.jooq.tables.records.BookingRecord;
 import org.jooq.DSLContext;
 import org.springframework.stereotype.Repository;
@@ -21,7 +22,10 @@ public class BookingRepository {
     public Booking save(Booking booking) {
         BookingRecord record = dsl.newRecord(Tables.BOOKING, booking); // Ánh xạ POJO -> Record
         record.store(); // Lưu vào database
-        return record.into(Booking.class); // Trả về POJO từ Record
+        // Retrieve the saved booking with the generated bookingId
+        return dsl.selectFrom(Tables.BOOKING)
+                .where(Tables.BOOKING.ID.eq(record.getId()))
+                .fetchOneInto(Booking.class);
     }
 
     // Tìm booking theo bookingId
