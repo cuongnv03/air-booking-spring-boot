@@ -27,7 +27,10 @@ public class FlightRepository {
         FlightRecord record = dsl.newRecord(Tables.FLIGHT);
         record.from(flight); // Map POJO to Record
         record.store();      // Lưu vào cơ sở dữ liệu
-        return record.into(Flight.class); // Chuyển lại thành POJO
+        // Retrieve the saved flight with the generated flightId
+        return dsl.selectFrom(Tables.FLIGHT)
+                .where(Tables.FLIGHT.ID.eq(record.getId()))
+                .fetchOneInto(Flight.class);
     }
 
     // Tìm chuyến bay theo flightId
