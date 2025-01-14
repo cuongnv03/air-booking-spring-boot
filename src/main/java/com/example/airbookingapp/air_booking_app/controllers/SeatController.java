@@ -19,28 +19,46 @@ public class SeatController {
         this.seatService = seatService;
     }
 
-    // Fetch seat details by ID
-    @GetMapping("/user/seats/{seatId}")
-    public ResponseEntity<SeatResponse> getSeatDetails(@PathVariable String seatId) {
-        SeatResponse seatResponse = seatService.getSeatDetails(seatId);
-        return ResponseEntity.ok(seatResponse);
+    // Lấy thông tin ghế theo flightId và seatId
+    @GetMapping("/flights/{flightId}/{seatId}")
+    public ResponseEntity<SeatResponse> getSeatDetails(
+            @PathVariable String flightId,
+            @PathVariable Integer seatId) {
+        SeatResponse response = seatService.getSeatDetails(flightId, seatId);
+        return ResponseEntity.ok(response);
     }
 
-    // List all available seats for a specific flight
-    @GetMapping("/user/flights/{flightId}/available")
+    // Lấy danh sách ghế trống của một chuyến bay
+    @GetMapping("/flights/{flightId}/seats")
     public ResponseEntity<List<SeatResponse>> getAvailableSeats(@PathVariable String flightId) {
-        List<SeatResponse> availableSeats = seatService.getAvailableSeatsByFlight(flightId);
-        return ResponseEntity.ok(availableSeats);
+        List<SeatResponse> response = seatService.getAvailableSeats(flightId);
+        return ResponseEntity.ok(response);
     }
 
-    // Update other seat attributes (e.g., baggage allowance, price)
-    @PutMapping("/admin/seats/{seatId}/attributes")
-    public ResponseEntity<SeatResponse> updateSeatAttributes(@PathVariable String seatId,
-                                                             @Valid @RequestBody SeatRequest seatRequest) {
-        SeatResponse updatedSeat = seatService.updateSeatAttributes(
-                seatId,
-                seatRequest
-        );
-        return ResponseEntity.ok(updatedSeat);
+    // Thêm một ghế mới
+    @PostMapping("/admin/flights/{flightId}/seats")
+    public ResponseEntity<SeatResponse> addSeat(@PathVariable String flightId,
+                                                @Valid @RequestBody SeatRequest seatRequest) {
+        SeatResponse response = seatService.addSeat(flightId, seatRequest);
+        return ResponseEntity.ok(response);
+    }
+
+    // Cập nhật thông tin ghế
+    @PutMapping("/admin/flights/{flightId}/{seatId}")
+    public ResponseEntity<SeatResponse> updateSeat(
+            @PathVariable String flightId,
+            @PathVariable Integer seatId,
+            @Valid @RequestBody SeatRequest seatRequest) {
+        SeatResponse response = seatService.updateSeat(flightId, seatId, seatRequest);
+        return ResponseEntity.ok(response);
+    }
+
+    // Xóa một ghế
+    @DeleteMapping("/admin/flights/{flightId}/{seatId}")
+    public ResponseEntity<String> deleteSeat(
+            @PathVariable String flightId,
+            @PathVariable Integer seatId) {
+        seatService.deleteSeat(flightId, seatId);
+        return ResponseEntity.ok("Ghế với flightId: " + flightId + " và seatId: " + seatId + " đã được xóa.");
     }
 }

@@ -23,40 +23,45 @@ public class SeatServiceImpl implements SeatService {
     }
 
     @Override
-    public SeatResponse getSeatDetails(String seatId) {
-        Seat seat = seatRepository.findById(seatId);
+    public SeatResponse getSeatDetails(String flightId, Integer seatId) {
+        Seat seat = seatRepository.findByFlightIdAndSeatId(flightId, seatId);
         if (seat == null) {
-            throw new RuntimeException("Seat with ID " + seatId + " not found.");
+            throw new RuntimeException("Không tìm thấy ghế với flightId: " + flightId + " và seatId: " + seatId);
         }
         return seatMapper.fromPojoToResponse(seat);
     }
 
     @Override
-    public List<SeatResponse> getAvailableSeatsByFlight(String flightId) {
-        List<Seat> availableSeats = seatRepository.findAvailableSeatsByFlight(flightId);
-        return availableSeats.stream()
+    public List<SeatResponse> getAvailableSeats(String flightId) {
+        List<Seat> seats = seatRepository.findAvailableSeatsByFlight(flightId);
+        return seats.stream()
                 .map(seatMapper::fromPojoToResponse)
                 .collect(Collectors.toList());
     }
 
     @Override
-    public SeatResponse updateSeatStatus(String seatId, String status) {
-        int rowsAffected = seatRepository.updateSeatStatus(seatId, status);
-        if (rowsAffected == 0) {
-            throw new RuntimeException("Failed to update status for seat ID " + seatId);
-        }
-        return getSeatDetails(seatId);
+    public SeatResponse addSeat(String flightId, SeatRequest seatRequest) {
+        Seat seat = seatMapper.fromRequestToPojo(seatRequest);
+        seat.setFlightId(flightId);
+        Seat savedSeat = seatRepository.save(seat);
+        return seatMapper.fromPojoToResponse(savedSeat);
     }
 
     @Override
-    public SeatResponse updateSeatAttributes(String seatId, SeatRequest seatRequest) {
-       Seat existingSeat = seatRepository.findById(seatId);
-         if (existingSeat == null) {
-              throw new RuntimeException("Seat with ID " + seatId + " not found.");
-         }
-         seatMapper.updateFromRequestToPojo(seatRequest, existingSeat);
-         existingSeat.setSeatId(seatId);
-         Seat updatedSeat = seatRepository.updateSeatAttributes(seatId, existingSeat);
-         return seatMapper.fromPojoToResponse(updatedSeat);
+    public SeatResponse updateSeat(String flightId, Integer seatId, SeatRequest seatRequest) {
+        Seat existingSeat = seatRepository.findByFlightIdAndSeatId(flightId, seatId);
+        if (existingSeat == null) {
+            throw new RuntimeException("Không tìm thấy ghế với flightId: " + flightId + " và seatId: " + seatId);
+        }
+        seatMapper.updateFromRequestToPojo(seatRequest, existingSeat);
+        Seat updatedSeat = seatRepository.update(flightId, seatId, existingSeat);
+        return seatMapper.fromPojoToResponse(updatedSeat);
+    }
+
+    @Override
+    public void deleteSeat(String flightId, Integer seatId) {
+        if (!seatRepository.delete(flightId, seatId)) {
+            throw new RuntimeException("Không thể xóa ghế với flightId: " + flightId + " và seatId: " + seatId);
+        }
     }
 }

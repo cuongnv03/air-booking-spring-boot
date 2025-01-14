@@ -15,7 +15,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -42,38 +41,27 @@ public class BookingServiceImpl implements BookingService {
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext()
                 .getAuthentication()
                 .getPrincipal();
-
         // Validate flight
-        Flight flight = flightRepository.findById(bookingRequest.getFlightId());
+        Flight flight = flightRepository.findByFlightId(bookingRequest.getFlightId());
         if (flight == null) {
             throw new RuntimeException("Flight ID " + bookingRequest.getFlightId() + " is invalid.");
         }
-
         // Validate seat
-        Seat seat = seatRepository.findById(bookingRequest.getSeatId());
-        if (seat == null || !"NOT BOOKED".equals(seat.getSeatStatus())) {
+        Seat seat = seatRepository.findByFlightIdAndSeatId(bookingRequest.getFlightId(), bookingRequest.getSeatId());
+        if (seat == null || seat.getSeatStatus()) {
             throw new RuntimeException("Seat ID " + bookingRequest.getSeatId() + " is not available.");
         }
-
         // Update seat status to "BOOKED"
-        seatRepository.updateSeatStatus(bookingRequest.getSeatId(), "BOOKED");
-
+        seatRepository.updateSeatStatus(bookingRequest.getFlightId(), bookingRequest.getSeatId(), true);
         // Create booking record
-        Booking booking = bookingMapper.fromRequestToPojo(
-                bookingRequest,
-                userDetails.getUserId(),
-                UUID.randomUUID().toString(),
-                "NOT PAID"
-        );
-
+        Booking booking = bookingMapper.fromRequestToPojo(bookingRequest);
         Booking savedBooking = bookingRepository.save(booking);
-
         // Convert to response DTO
         return bookingMapper.fromPojoToResponse(savedBooking);
     }
 
     @Override
-    public BookingResponse findBookingById(String bookingId) {
+    public BookingResponse getBookingById(String bookingId) {
         Booking booking = bookingRepository.findById(bookingId);
         if (booking == null) {
             throw new RuntimeException("Booking ID " + bookingId + " not found.");
@@ -92,8 +80,21 @@ public class BookingServiceImpl implements BookingService {
                 .collect(Collectors.toList());
     }
 
+    // Xóa một booking theo ID
     @Override
-    public boolean isSeatBooked(String seatId) {
-        return bookingRepository.existsBySeatId(seatId);
+    public void deleteBooking(String bookingId) {
+        boolean deleted = bookingRepository.deleteById(bookingId);
+        if (!deleted) {
+            throw new RuntimeException("Không thể xóa booking với ID: " + bookingId);
+        }
+    }
+
+    // Cập nhật trạng thái thanh toán của booking
+    @Override
+    public void updatePaymentStatus(String bookingId, boolean paymentStatus) {
+        int rowsAffected = bookingRepository.updatePaymentStatus(bookingId, paymentStatus);
+        if (rowsAffected == 0) {
+            throw new RuntimeException("Không thể cập nhật trạng thái thanh toán cho booking với ID: " + bookingId);
+        }
     }
 }

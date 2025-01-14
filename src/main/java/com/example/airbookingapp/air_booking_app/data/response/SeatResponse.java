@@ -3,11 +3,11 @@ package com.example.airbookingapp.air_booking_app.data.response;
 import lombok.Data;
 
 @Data
-public class SeatResponse { // This DTO is used when returning seat information to the client.
-    private String seatId;
-    private String seatClass; // "Business" or "Economy"
-    private Integer baggageAllowance;
-    private Integer price;
-    private String seatStatus; // "BOOKED" or "NOT BOOKED"
-    private String flightId;
+public class SeatResponse {
+    private Integer seatId; // ID của ghế
+    private String seatClass; // Loại ghế: "economy" hoặc "business"
+    private Long price; // Giá vé cho ghế
+    private Integer baggageAllowance; // Số hành lý ký gửi được phép
+    private Boolean seatStatus; // Trạng thái ghế: TRUE nếu đã đặt, FALSE nếu còn trống
+    private String flightId; // Mã chuyến bay liên kết với ghế
 }

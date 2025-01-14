@@ -7,7 +7,6 @@ import com.example.airbookingapp.air_booking_app.data.response.FlightResponse;
 import com.example.airbookingapp.air_booking_app.jooq.tables.pojos.Flight;
 import com.example.airbookingapp.air_booking_app.repositories.FlightRepository;
 import com.example.airbookingapp.air_booking_app.services.FlightService;
-
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -15,11 +14,14 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class FlightServiceImpl implements FlightService {
+
     private final FlightMapper flightMapper;
     private final FlightRepository flightRepository;
+
     public FlightServiceImpl(FlightMapper flightMapper, FlightRepository flightRepository) {
         this.flightMapper = flightMapper;
         this.flightRepository = flightRepository;
@@ -27,66 +29,86 @@ public class FlightServiceImpl implements FlightService {
 
     @Override
     public FlightResponse createFlight(FlightRequest request) {
-        Flight flight = flightMapper.fromRequestToPojo(request); // Map DTO to POJO
-        Flight savedFlight = flightRepository.save(flight);      // Save POJO via repository
-        return flightMapper.fromPojoToResponse(savedFlight);     // Map POJO to Response DTO
+        // Ánh xạ từ DTO sang POJO
+        Flight flight = flightMapper.fromRequestToPojo(request);
+        // Lưu thông tin chuyến bay
+        Flight savedFlight = flightRepository.save(flight);
+        // Ánh xạ từ POJO sang Response DTO
+        return flightMapper.fromPojoToResponse(savedFlight);
     }
 
     @Override
-    public FlightResponse getFlightById(String id) {
-        Flight flight = flightRepository.findById(id);           // Fetch POJO from repository
-        return flightMapper.fromPojoToResponse(flight);          // Map POJO to Response DTO
+    public FlightResponse getFlightById(String flightId) {
+        // Lấy thông tin chuyến bay từ repository
+        Flight flight = flightRepository.findByFlightId(flightId);
+        if (flight == null) {
+            throw new RuntimeException("Không tìm thấy chuyến bay với flightId: " + flightId);
+        }
+        // Ánh xạ từ POJO sang Response DTO
+        return flightMapper.fromPojoToResponse(flight);
     }
 
     @Override
     public List<Page<FlightResponse>> getAllFlights(int sizePerPage) {
-        List<Flight> flights = flightRepository.findAll(); // Fetch POJOs from repository
-        List<FlightResponse> listFlights = flights.stream().map(flightMapper::fromPojoToResponse).toList(); // Map POJOs to Response DTOs
-        return getPages(sizePerPage, listFlights);
+        // Lấy danh sách tất cả chuyến bay
+        List<Flight> flights = flightRepository.findAll();
+        // Ánh xạ từ POJO sang Response DTO
+        List<FlightResponse> flightResponses = flights.stream()
+                .map(flightMapper::fromPojoToResponse)
+                .collect(Collectors.toList());
+        // Chia thành các trang
+        return paginate(flightResponses, sizePerPage);
     }
 
     @Override
     public void deleteFlight(String flightId) {
-        if (!flightRepository.deleteById(flightId)) {
-            throw new RuntimeException("Flight ID " + flightId + " is not found.");
+        // Xóa chuyến bay
+        if (!flightRepository.deleteByFlightId(flightId)) {
+            throw new RuntimeException("Không tìm thấy chuyến bay với flightId: " + flightId);
         }
     }
 
     @Override
     public FlightResponse updateFlight(FlightRequest flightRequest, String flightId) {
-        Flight existingFlight = flightRepository.findById(flightId);
+        // Tìm chuyến bay hiện tại
+        Flight existingFlight = flightRepository.findByFlightId(flightId);
         if (existingFlight == null) {
-            throw new RuntimeException("Flight ID " + flightId + " is not found.");
+            throw new RuntimeException("Không tìm thấy chuyến bay với flightId: " + flightId);
         }
-        // Use MapStruct to update existingFlight with values from flightRequest
+        // Cập nhật thông tin chuyến bay
         flightMapper.updateFromRequestToPojo(flightRequest, existingFlight);
-        // Ensure the flightId remains unchanged
-        existingFlight.setFlightId(flightId);
-        // Persist changes
+        // Lưu thông tin đã cập nhật
         Flight updatedFlight = flightRepository.update(flightId, existingFlight);
-        // Convert updatedFlight to Response DTO
+        // Ánh xạ từ POJO sang Response DTO
         return flightMapper.fromPojoToResponse(updatedFlight);
     }
 
     @Override
     public List<Page<FlightResponse>> searchFlights(List<SearchFlightRequest> filters, int sizePerPage) {
-        List<Flight> flights = flightRepository.search(filters); // Custom jOOQ implementation for search
-        List<FlightResponse> listFlights = flights.stream().map(flightMapper::fromPojoToResponse).toList(); // Map POJOs to Response DTOs
-        return getPages(sizePerPage, listFlights);
+        // Tìm kiếm chuyến bay dựa trên các bộ lọc
+        List<Flight> flights = flightRepository.search(filters);
+        // Ánh xạ từ POJO sang Response DTO
+        List<FlightResponse> flightResponses = flights.stream()
+                .map(flightMapper::fromPojoToResponse)
+                .collect(Collectors.toList());
+        // Chia thành các trang
+        return paginate(flightResponses, sizePerPage);
     }
 
-    private List<Page<FlightResponse>> getPages(int sizePerPage, List<FlightResponse> listFlights) {
-        List<Page<FlightResponse>> result = new ArrayList<>();
-        int totalFlights = listFlights.size();
-        int totalPages = (int) Math.ceil((double) totalFlights / sizePerPage);
-        for (int i = 0; i < totalPages; i++) {
-            int start = i * sizePerPage;
-            int end = Math.min(start + sizePerPage, totalFlights);
+    // Hàm phụ để chia dữ liệu thành các trang
+    private List<Page<FlightResponse>> paginate(List<FlightResponse> responses, int sizePerPage) {
+        List<Page<FlightResponse>> pages = new ArrayList<>();
+        int totalItems = responses.size();
+        int totalPages = (int) Math.ceil((double) totalItems / sizePerPage);
 
-            List<FlightResponse> pageContent = listFlights.subList(start, end);
-            Page<FlightResponse> page = new PageImpl<>(pageContent, PageRequest.of(i, sizePerPage), totalFlights);
-            result.add(page);
+        for (int pageIndex = 0; pageIndex < totalPages; pageIndex++) {
+            int start = pageIndex * sizePerPage;
+            int end = Math.min(start + sizePerPage, totalItems);
+            List<FlightResponse> pageContent = responses.subList(start, end);
+            Page<FlightResponse> page = new PageImpl<>(pageContent, PageRequest.of(pageIndex, sizePerPage), totalItems);
+            pages.add(page);
         }
-        return result;
+        return pages;
     }
+
 }

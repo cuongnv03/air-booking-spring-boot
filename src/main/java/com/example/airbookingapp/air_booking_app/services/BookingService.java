@@ -6,15 +6,16 @@ import com.example.airbookingapp.air_booking_app.data.response.BookingResponse;
 import java.util.List;
 
 public interface BookingService {
-    // Create a new booking
+
     BookingResponse createBooking(BookingRequest bookingRequest);
 
-    // Find a booking by ID
-    BookingResponse findBookingById(String bookingId);
+    BookingResponse getBookingById(String bookingId);
 
-    // Find all bookings by user ID
     List<BookingResponse> getAllBookingsByUser();
 
-    // Check if a booking exists for a seat
-    boolean isSeatBooked(String seatId);
+    // Xóa một booking theo ID
+    void deleteBooking(String bookingId);
+
+    // Cập nhật trạng thái thanh toán của booking
+    void updatePaymentStatus(String bookingId, boolean paymentStatus);
 }

@@ -1,7 +1,7 @@
 package com.example.airbookingapp.air_booking_app.repositories;
 
-import com.example.airbookingapp.air_booking_app.jooq.tables.pojos.Users;
-import com.example.airbookingapp.air_booking_app.jooq.tables.records.UsersRecord;
+import com.example.airbookingapp.air_booking_app.jooq.tables.pojos.User;
+import com.example.airbookingapp.air_booking_app.jooq.tables.records.UserRecord;
 import com.example.airbookingapp.air_booking_app.jooq.Tables;
 import org.jooq.DSLContext;
 import org.springframework.stereotype.Repository;
@@ -17,22 +17,22 @@ public class UserRepository {
         this.dsl = dsl;
     }
 
-    public Users save(Users user) {
-        UsersRecord record = dsl.newRecord(Tables.USERS, user);
+    public User save(User user) {
+        UserRecord record = dsl.newRecord(Tables.USER, user);
         record.store();
-        return record.into(Users.class);
+        return record.into(User.class);
     }
 
-    public Optional<Users> findByUsername(String username) {
-        return dsl.selectFrom(Tables.USERS)
-                .where(Tables.USERS.USERNAME.eq(username))
-                .fetchOptionalInto(Users.class);
+    public Optional<User> findByUsername(String username) {
+        return dsl.selectFrom(Tables.USER)
+                .where(Tables.USER.USERNAME.eq(username))
+                .fetchOptionalInto(User.class);
     }
 
     public boolean existsByUsername(String username) {
         return dsl.fetchExists(
-                dsl.selectFrom(Tables.USERS)
-                        .where(Tables.USERS.USERNAME.eq(username))
+                dsl.selectFrom(Tables.USER)
+                        .where(Tables.USER.USERNAME.eq(username))
         );
     }
 }

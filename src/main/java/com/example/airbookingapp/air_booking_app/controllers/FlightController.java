@@ -16,41 +16,54 @@ import jakarta.validation.Valid;
 @RequestMapping
 public class FlightController {
 
-    @Autowired
     private final FlightService flightService;
+
+    @Autowired
     public FlightController(FlightService flightService) {
         this.flightService = flightService;
     }
 
-    // Add a flight
-    @PostMapping("/admin/flights/add")
-    public FlightResponse addFlight(@Valid @RequestBody FlightRequest flightRequest) {
-        return flightService.createFlight(flightRequest);
+    // Thêm mới chuyến bay
+    @PostMapping("/admin/flights")
+    public ResponseEntity<FlightResponse> addFlight(@Valid @RequestBody FlightRequest flightRequest) {
+        FlightResponse response = flightService.createFlight(flightRequest);
+        return ResponseEntity.ok(response);
     }
 
-    // Update flight time
-    @PutMapping("/admin/flights/update-time/{flightId}")
-    public FlightResponse updateFlightTime(@Valid @RequestBody FlightRequest flightRequest, @PathVariable String flightId) {
-        return flightService.updateFlight(flightRequest, flightId);
+    // Cập nhật thông tin chuyến bay
+    @PutMapping("/admin/flights/{flightId}")
+    public ResponseEntity<FlightResponse> updateFlight(@PathVariable String flightId, @Valid @RequestBody FlightRequest flightRequest) {
+        FlightResponse response = flightService.updateFlight(flightRequest, flightId);
+        return ResponseEntity.ok(response);
     }
 
-    // Delete a flight
-    @DeleteMapping("/admin/flights/delete/{flightId}")
+    // Xóa chuyến bay
+    @DeleteMapping("/admin/flights/{flightId}")
     public ResponseEntity<String> deleteFlight(@PathVariable String flightId) {
         flightService.deleteFlight(flightId);
-        return ResponseEntity.ok("Flight " + flightId + " deleted successfully");
+        return ResponseEntity.ok("Đã xóa chuyến bay với flightId: " + flightId);
     }
 
-    // Get all flights
-    @GetMapping("/user/flights")
-    public List<Page<FlightResponse>> getAllFlights(@RequestParam(value = "sizePerPage", required = false, defaultValue = "10") int sizePerPage) {
-        return flightService.getAllFlights(sizePerPage);
+    // Lấy danh sách tất cả các chuyến bay
+    @GetMapping("/flights")
+    public ResponseEntity<List<Page<FlightResponse>>> getAllFlights(@RequestParam(value = "sizePerPage", defaultValue = "10") int sizePerPage) {
+        List<Page<FlightResponse>> response = flightService.getAllFlights(sizePerPage);
+        return ResponseEntity.ok(response);
     }
 
-    // Search flights
-    @GetMapping("/user/flights/search")
-    public List<Page<FlightResponse>> searchFlights(@RequestParam(value = "sizePerPage", required = false, defaultValue = "10") int sizePerPage,
-                                                      @Valid @RequestBody List<SearchFlightRequest> searchFlightRequests) {
-        return flightService.searchFlights(searchFlightRequests, sizePerPage);
+    // Tìm kiếm chuyến bay theo tiêu chí
+    @PostMapping("/flights/search")
+    public ResponseEntity<List<Page<FlightResponse>>> searchFlights(
+            @RequestBody List<SearchFlightRequest> searchFlightRequests,
+            @RequestParam(value = "sizePerPage", defaultValue = "10") int sizePerPage) {
+        List<Page<FlightResponse>> response = flightService.searchFlights(searchFlightRequests, sizePerPage);
+        return ResponseEntity.ok(response);
+    }
+
+    // Lấy thông tin chi tiết của chuyến bay
+    @GetMapping("/flights/{flightId}")
+    public ResponseEntity<FlightResponse> getFlightById(@PathVariable String flightId) {
+        FlightResponse response = flightService.getFlightById(flightId);
+        return ResponseEntity.ok(response);
     }
 }

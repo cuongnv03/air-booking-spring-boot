@@ -1,6 +1,6 @@
 package com.example.airbookingapp.air_booking_app.security.services;
 
-import com.example.airbookingapp.air_booking_app.jooq.tables.pojos.Users;
+import com.example.airbookingapp.air_booking_app.jooq.tables.pojos.User;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import org.springframework.security.core.GrantedAuthority;
@@ -25,7 +25,7 @@ public class UserDetailsImpl implements UserDetails {
         this.authorities = authorities;
     }
 
-    public static UserDetailsImpl build(Users user) {
+    public static UserDetailsImpl build(User user) {
         List<GrantedAuthority> authorities = new ArrayList<>();
         authorities.add(new SimpleGrantedAuthority(user.getIsAdmin() ? "ROLE_ADMIN" : "ROLE_USER"));
 

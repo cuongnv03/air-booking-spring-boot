@@ -1,7 +1,8 @@
 package com.example.airbookingapp.air_booking_app.repositories;
 
-import com.example.airbookingapp.air_booking_app.jooq.tables.pojos.Booking;
 import com.example.airbookingapp.air_booking_app.jooq.Tables;
+import com.example.airbookingapp.air_booking_app.jooq.tables.pojos.Booking;
+import com.example.airbookingapp.air_booking_app.jooq.tables.records.BookingRecord;
 import org.jooq.DSLContext;
 import org.springframework.stereotype.Repository;
 
@@ -16,37 +17,48 @@ public class BookingRepository {
         this.dsl = dsl;
     }
 
-    // Save a new booking
+    // Lưu một booking mới
     public Booking save(Booking booking) {
-        dsl.insertInto(Tables.BOOKING)
-                .set(Tables.BOOKING.BOOKING_ID, booking.getBookingId())
-                .set(Tables.BOOKING.FLIGHT_ID, booking.getFlightId())
-                .set(Tables.BOOKING.SEAT_ID, booking.getSeatId())
-                .set(Tables.BOOKING.USER_ID, booking.getUserId())
-                .set(Tables.BOOKING.PAYMENT_STATUS, booking.getPaymentStatus())
-                .execute();
-        return booking;
+        BookingRecord record = dsl.newRecord(Tables.BOOKING, booking); // Ánh xạ POJO -> Record
+        record.store(); // Lưu vào database
+        return record.into(Booking.class); // Trả về POJO từ Record
     }
 
-    // Find a booking by ID
+    // Tìm booking theo bookingId
     public Booking findById(String bookingId) {
         return dsl.selectFrom(Tables.BOOKING)
                 .where(Tables.BOOKING.BOOKING_ID.eq(bookingId))
                 .fetchOneInto(Booking.class);
     }
 
-    // Find all bookings by user ID
+    // Tìm tất cả các booking theo userId
     public List<Booking> findAllByUserId(Integer userId) {
         return dsl.selectFrom(Tables.BOOKING)
                 .where(Tables.BOOKING.USER_ID.eq(userId))
                 .fetchInto(Booking.class);
     }
 
-    // Check if a booking exists for a seat
-    public boolean existsBySeatId(String seatId) {
+    // Xóa booking theo bookingId
+    public boolean deleteById(String bookingId) {
+        return dsl.deleteFrom(Tables.BOOKING)
+                .where(Tables.BOOKING.BOOKING_ID.eq(bookingId))
+                .execute() > 0;
+    }
+
+    // Kiểm tra ghế đã được đặt chưa
+    public boolean isSeatBooked(String flightId, Integer seatId) {
         return dsl.fetchExists(
                 dsl.selectFrom(Tables.BOOKING)
-                        .where(Tables.BOOKING.SEAT_ID.eq(seatId))
+                        .where(Tables.BOOKING.FLIGHT_ID.eq(flightId))
+                        .and(Tables.BOOKING.SEAT_ID.eq(seatId))
         );
+    }
+
+    // Cập nhật trạng thái thanh toán
+    public int updatePaymentStatus(String bookingId, boolean paymentStatus) {
+        return dsl.update(Tables.BOOKING)
+                .set(Tables.BOOKING.PAYMENT_STATUS, paymentStatus)
+                .where(Tables.BOOKING.BOOKING_ID.eq(bookingId))
+                .execute();
     }
 }

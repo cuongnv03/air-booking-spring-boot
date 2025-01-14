@@ -2,13 +2,17 @@ package com.example.airbookingapp.air_booking_app.data.request;
 
 import lombok.Data;
 
-import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 
 @Data
 public class BookingRequest {
-    @NotEmpty(message = "Flight ID cannot be empty")
+
+    @NotNull(message = "Flight ID cannot be null")
     private String flightId;
 
-    @NotEmpty(message = "Seat ID cannot be empty")
-    private String seatId;
+    @NotNull(message = "Seat ID cannot be null")
+    private Integer seatId;
+
+    @NotNull(message = "User ID cannot be null")
+    private Integer userId;
 }
