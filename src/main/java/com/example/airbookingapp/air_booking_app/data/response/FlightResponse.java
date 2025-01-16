@@ -11,10 +11,10 @@ public class FlightResponse {
     private String departurePoint;
     private String destinationPoint;
     private LocalDateTime scheduledTime;
-    private long priceE; // Economy class price
-    private long priceB; // Business class price
-    private int baggageAllowanceE; // Economy baggage allowance
-    private int baggageAllowanceB; // Business baggage allowance
-    private int numSeatsE; // Economy seats available
-    private int numSeatsB; // Business seats available
+    private Long priceE; // Economy class price
+    private Long priceB; // Business class price
+    private Integer baggageAllowanceE; // Economy baggage allowance
+    private Integer baggageAllowanceB; // Business baggage allowance
+    private Integer numSeatsE; // Economy seats available
+    private Integer numSeatsB; // Business seats available
 }

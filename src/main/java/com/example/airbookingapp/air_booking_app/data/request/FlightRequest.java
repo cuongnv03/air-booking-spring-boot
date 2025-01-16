@@ -10,8 +10,8 @@ public class FlightRequest {
     private String departurePoint;
     private String destinationPoint;
     private LocalDateTime scheduledTime;
-    private long priceE; // Economy class price
-    private long priceB; // Business class price
-    private int baggageAllowanceE; // Economy baggage allowance
-    private int baggageAllowanceB; // Business baggage allowance
+    private Long priceE; // Economy class price
+    private Long priceB; // Business class price
+    private Integer baggageAllowanceE; // Economy baggage allowance
+    private Integer baggageAllowanceB; // Business baggage allowance
 }

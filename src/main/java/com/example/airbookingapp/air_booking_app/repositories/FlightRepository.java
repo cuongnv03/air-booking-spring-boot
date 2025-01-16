@@ -43,7 +43,7 @@ public class FlightRepository {
     // Tìm tất cả các chuyến bay
     public List<Flight> findAll(int page, int size) {
         return dsl.selectFrom(Tables.FLIGHT)
-                .orderBy(Tables.FLIGHT.FLIGHT_ID.desc())
+                .orderBy(Tables.FLIGHT.FLIGHT_ID.asc())
                 .limit(size)
                 .offset(page * size)
                 .fetchInto(Flight.class);
@@ -99,7 +99,7 @@ public class FlightRepository {
             return DSL.noCondition();
         }
 
-        Condition condition = createCondition(filters.remove(0));
+        Condition condition = createCondition(filters.removeFirst());
         for (SearchFlightRequest filter : filters) {
             condition = condition.and(createCondition(filter));
         }
@@ -115,7 +115,7 @@ public class FlightRepository {
         Object value = castToRequiredType(filter.getKey(), filter.getValue());
 
         return switch (filter.getOperator()) {
-            case ":" -> field.eq(value);
+            case "=" -> field.eq(value);
             case "<" -> field.lt(value);
             case ">" -> field.gt(value);
             case "<=" -> field.le(value);
@@ -129,7 +129,7 @@ public class FlightRepository {
         if (value == null) return null;
         return switch (key) {
             case "scheduled_time" -> LocalDateTime.parse(value);
-            case "price_E", "price_B" -> Long.parseLong(value);
+            case "price_e", "price_b" -> Long.parseLong(value);
             default -> value;
         };
     }
