@@ -97,16 +97,14 @@ public class BookingServiceImpl implements BookingService {
     }
 
     // Cập nhật trạng thái thanh toán của booking
-    @Override
-    public void updatePaymentStatus(String bookingId, boolean paymentStatus) {
+    private void updatePaymentStatus(String bookingId, boolean paymentStatus) {
         int rowsAffected = bookingRepository.updatePaymentStatus(bookingId, paymentStatus);
         if (rowsAffected == 0) {
             throw new RuntimeException("Không thể cập nhật trạng thái thanh toán cho booking với ID: " + bookingId);
         }
     }
 
-    @Override
-    public Long getBookedSeatPrice(String bookingId) {
+    private Long getBookedSeatPrice(String bookingId) {
         Long price = bookingRepository.getBookedSeatPrice(bookingId);
         if (price == null) {
             throw new ResourceNotFoundException("Booking or Seat not found with ID: " + bookingId);

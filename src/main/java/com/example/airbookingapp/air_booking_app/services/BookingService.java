@@ -18,11 +18,6 @@ public interface BookingService {
     // Xóa một booking theo ID
     void deleteBooking(String bookingId);
 
-    // Cập nhật trạng thái thanh toán của booking
-    void updatePaymentStatus(String bookingId, boolean paymentStatus);
-
-    Long getBookedSeatPrice(String bookingId);
-
     @Transactional
     void payBooking(String bookingId, PaymentRequest paymentRequest);
 }

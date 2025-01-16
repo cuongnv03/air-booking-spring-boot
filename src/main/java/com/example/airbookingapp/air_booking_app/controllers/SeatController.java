@@ -1,8 +1,10 @@
 package com.example.airbookingapp.air_booking_app.controllers;
 
+import com.example.airbookingapp.air_booking_app.data.request.AddSeatsRequest;
 import com.example.airbookingapp.air_booking_app.data.request.SeatRequest;
 import com.example.airbookingapp.air_booking_app.data.response.SeatResponse;
 import com.example.airbookingapp.air_booking_app.services.SeatService;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -35,12 +37,16 @@ public class SeatController {
         return ResponseEntity.ok(response);
     }
 
-    // Thêm một ghế mới
+    // Thêm nhiều ghế mới
     @PostMapping("/admin/flights/{flightId}/seats")
-    public ResponseEntity<SeatResponse> addSeat(@PathVariable String flightId,
-                                                @Valid @RequestBody SeatRequest seatRequest) {
-        SeatResponse response = seatService.addSeat(flightId, seatRequest);
-        return ResponseEntity.ok(response);
+    public ResponseEntity<String> addSeats(@PathVariable String flightId,
+                                           @Valid @RequestBody AddSeatsRequest addSeatsRequest) {
+        try {
+            seatService.addSeatsToFlight(flightId, addSeatsRequest);
+            return ResponseEntity.ok("Seats added successfully.");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error adding seats: " + e.getMessage());
+        }
     }
 
     // Cập nhật thông tin ghế

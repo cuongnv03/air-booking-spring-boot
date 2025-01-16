@@ -2,6 +2,7 @@ package com.example.airbookingapp.air_booking_app.repositories;
 
 import com.example.airbookingapp.air_booking_app.jooq.Tables;
 import com.example.airbookingapp.air_booking_app.jooq.tables.pojos.Seat;
+import com.example.airbookingapp.air_booking_app.jooq.tables.records.SeatRecord;
 import org.jooq.DSLContext;
 import org.springframework.stereotype.Repository;
 
@@ -24,13 +25,6 @@ public class SeatRepository {
                 .fetchOneInto(Seat.class);
     }
 
-    // Tìm tất cả ghế của một chuyến bay
-    public List<Seat> findByFlightId(String flightId) {
-        return dsl.selectFrom(Tables.SEAT)
-                .where(Tables.SEAT.FLIGHT_ID.eq(flightId))
-                .fetchInto(Seat.class);
-    }
-
     // Tìm tất cả ghế còn trống của một chuyến bay
     public List<Seat> findAvailableSeatsByFlight(String flightId) {
         return dsl.selectFrom(Tables.SEAT)
@@ -39,12 +33,11 @@ public class SeatRepository {
                 .fetchInto(Seat.class);
     }
 
-    // Lưu một ghế mới
-    public Seat save(Seat seat) {
-        dsl.insertInto(Tables.SEAT)
-                .set(dsl.newRecord(Tables.SEAT, seat))
-                .execute();
-        return findByFlightIdAndSeatId(seat.getFlightId(), seat.getId());
+    public void saveSeats(List<Seat> seats) {
+        List<SeatRecord> seatRecords = seats.stream()
+                .map(seat -> dsl.newRecord(Tables.SEAT, seat))
+                .toList();
+        dsl.batchInsert(seatRecords).execute();
     }
 
     // Cập nhật thông tin ghế

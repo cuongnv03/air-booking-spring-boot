@@ -1,13 +1,16 @@
 package com.example.airbookingapp.air_booking_app.services.impl;
 
 import com.example.airbookingapp.air_booking_app.data.mapper.SeatMapper;
+import com.example.airbookingapp.air_booking_app.data.request.AddSeatsRequest;
 import com.example.airbookingapp.air_booking_app.data.request.SeatRequest;
 import com.example.airbookingapp.air_booking_app.data.response.SeatResponse;
 import com.example.airbookingapp.air_booking_app.jooq.tables.pojos.Seat;
+import com.example.airbookingapp.air_booking_app.repositories.FlightRepository;
 import com.example.airbookingapp.air_booking_app.repositories.SeatRepository;
 import com.example.airbookingapp.air_booking_app.services.SeatService;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -16,10 +19,12 @@ public class SeatServiceImpl implements SeatService {
 
     private final SeatRepository seatRepository;
     private final SeatMapper seatMapper;
+    private final FlightRepository flightRepository;
 
-    public SeatServiceImpl(SeatRepository seatRepository, SeatMapper seatMapper) {
+    public SeatServiceImpl(SeatRepository seatRepository, SeatMapper seatMapper, FlightRepository flightRepository) {
         this.seatRepository = seatRepository;
         this.seatMapper = seatMapper;
+        this.flightRepository = flightRepository;
     }
 
     @Override
@@ -39,12 +44,29 @@ public class SeatServiceImpl implements SeatService {
                 .collect(Collectors.toList());
     }
 
-    @Override
-    public SeatResponse addSeat(String flightId, SeatRequest seatRequest) {
+    private Seat addSeat(String flightId, SeatRequest seatRequest) {
         Seat seat = seatMapper.fromRequestToPojo(seatRequest);
         seat.setFlightId(flightId);
-        Seat savedSeat = seatRepository.save(seat);
-        return seatMapper.fromPojoToResponse(savedSeat);
+        return seat;
+    }
+
+    @Override
+    public void addSeatsToFlight(String flightId, AddSeatsRequest addSeatsRequest) {
+        if (flightRepository.findByFlightId(flightId) == null) {
+            throw new RuntimeException("Không tìm thấy chuyến bay với flightId: " + flightId);
+        }
+        List<Seat> seats = new ArrayList<>();
+        while (addSeatsRequest.getBusinessSeats() > 0) {
+            Seat seat = addSeat(flightId, new SeatRequest("business", false));
+            seats.add(seat);
+            addSeatsRequest.setBusinessSeats(addSeatsRequest.getBusinessSeats() - 1);
+        }
+        while (addSeatsRequest.getEconomySeats() > 0) {
+            Seat seat = addSeat(flightId, new SeatRequest("economy", false));
+            seats.add(seat);
+            addSeatsRequest.setEconomySeats(addSeatsRequest.getEconomySeats() - 1);
+        }
+        seatRepository.saveSeats(seats);
     }
 
     @Override
