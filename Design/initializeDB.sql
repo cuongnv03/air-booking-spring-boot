@@ -240,6 +240,39 @@ BEFORE INSERT ON public.seat
 FOR EACH ROW
 EXECUTE FUNCTION set_seat_id();
 
+CREATE OR REPLACE VIEW ticket AS
+SELECT 
+    b.booking_id,
+	u.user_id,
+    u.full_name,
+    u.date_of_birth,
+    u.gender,
+    u.contact_phone,
+    u.email,
+    u.identity_card_id,
+    f.company,
+    f.flight_id,
+    f.scheduled_time,
+    dep_airport.airport_name AS departure_airport,
+    dest_airport.airport_name AS destination_airport,
+    s.id AS seat_id,
+    s.baggage_allowance,
+    s.price AS ticket_price
+FROM 
+    booking b
+INNER JOIN 
+    "user" u ON b.user_id = u.user_id
+INNER JOIN 
+    flight f ON b.flight_id = f.flight_id
+INNER JOIN
+	seat s ON b.seat_id = s.id AND b.flight_id = s.flight_id
+INNER JOIN 
+    airport dep_airport ON f.departure_point = dep_airport.airport_code
+INNER JOIN 
+    airport dest_airport ON f.destination_point = dest_airport.airport_code
+WHERE 
+    b.payment_status = TRUE;
+
 -- Thêm dữ liệu mẫu
 -- Users
 INSERT INTO "user" (username, password, is_admin, full_name, date_of_birth, gender, contact_phone, email, identity_card_id) VALUES
