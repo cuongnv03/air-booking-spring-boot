@@ -8,12 +8,8 @@ import com.example.airbookingapp.air_booking_app.data.response.PaginatedResponse
 import com.example.airbookingapp.air_booking_app.jooq.tables.pojos.Flight;
 import com.example.airbookingapp.air_booking_app.repositories.FlightRepository;
 import com.example.airbookingapp.air_booking_app.services.FlightService;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 

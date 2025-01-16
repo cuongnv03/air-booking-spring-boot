@@ -120,19 +120,60 @@ EXECUTE FUNCTION update_seat_count();
 CREATE OR REPLACE FUNCTION set_seat_price_baggage()
 RETURNS TRIGGER AS $$
 BEGIN
-    IF NEW.seat_class = 'economy' THEN
-        NEW.price = (SELECT price_E FROM Flight WHERE flight_id = NEW.flight_id);
-        NEW.baggage_allowance = (SELECT baggage_allowance_E FROM Flight WHERE flight_id = NEW.flight_id);
-    ELSIF NEW.seat_class = 'business' THEN
-        NEW.price = (SELECT price_B FROM Flight WHERE flight_id = NEW.flight_id);
-        NEW.baggage_allowance = (SELECT baggage_allowance_B FROM Flight WHERE flight_id = NEW.flight_id);
+    IF TG_TABLE_NAME = 'seat' THEN
+        -- Khi INSERT hoặc UPDATE trên bảng Seat
+        IF NEW.seat_class = 'economy' THEN
+            IF NEW.price IS DISTINCT FROM (SELECT price_E FROM Flight WHERE flight_id = NEW.flight_id)
+                OR NEW.baggage_allowance IS DISTINCT FROM (SELECT baggage_allowance_E FROM Flight WHERE flight_id = NEW.flight_id) THEN
+                NEW.price = (SELECT price_E FROM Flight WHERE flight_id = NEW.flight_id);
+                NEW.baggage_allowance = (SELECT baggage_allowance_E FROM Flight WHERE flight_id = NEW.flight_id);
+            END IF;
+        ELSIF NEW.seat_class = 'business' THEN
+            IF NEW.price IS DISTINCT FROM (SELECT price_B FROM Flight WHERE flight_id = NEW.flight_id)
+                OR NEW.baggage_allowance IS DISTINCT FROM (SELECT baggage_allowance_B FROM Flight WHERE flight_id = NEW.flight_id) THEN
+                NEW.price = (SELECT price_B FROM Flight WHERE flight_id = NEW.flight_id);
+                NEW.baggage_allowance = (SELECT baggage_allowance_B FROM Flight WHERE flight_id = NEW.flight_id);
+            END IF;
+        END IF;
+        RETURN NEW;
+
+    ELSIF TG_TABLE_NAME = 'flight' THEN
+        -- Khi UPDATE trên bảng Flight
+        UPDATE Seat
+        SET 
+            price = CASE 
+                WHEN seat_class = 'economy' THEN NEW.price_E
+                WHEN seat_class = 'business' THEN NEW.price_B
+                ELSE price
+            END,
+            baggage_allowance = CASE 
+                WHEN seat_class = 'economy' THEN NEW.baggage_allowance_E
+                WHEN seat_class = 'business' THEN NEW.baggage_allowance_B
+                ELSE baggage_allowance
+            END
+        WHERE flight_id = NEW.flight_id
+          AND (price IS DISTINCT FROM CASE 
+                WHEN seat_class = 'economy' THEN NEW.price_E
+                WHEN seat_class = 'business' THEN NEW.price_B
+                ELSE price END
+              OR baggage_allowance IS DISTINCT FROM CASE 
+                WHEN seat_class = 'economy' THEN NEW.baggage_allowance_E
+                WHEN seat_class = 'business' THEN NEW.baggage_allowance_B
+                ELSE baggage_allowance END);
+        RETURN NEW;
     END IF;
-    RETURN NEW;
+
+    RETURN NULL;
 END;
 $$ LANGUAGE plpgsql;
 
 CREATE TRIGGER set_seat_price_baggage_trigger
-BEFORE INSERT ON Seat
+BEFORE INSERT OR UPDATE ON Seat
+FOR EACH ROW
+EXECUTE FUNCTION set_seat_price_baggage();
+
+CREATE TRIGGER update_seat_price_baggage_trigger
+AFTER UPDATE ON Flight
 FOR EACH ROW
 EXECUTE FUNCTION set_seat_price_baggage();
 

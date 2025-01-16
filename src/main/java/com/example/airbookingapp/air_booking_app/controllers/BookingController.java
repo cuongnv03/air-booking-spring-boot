@@ -1,6 +1,7 @@
 package com.example.airbookingapp.air_booking_app.controllers;
 
 import com.example.airbookingapp.air_booking_app.data.request.BookingRequest;
+import com.example.airbookingapp.air_booking_app.data.request.PaymentRequest;
 import com.example.airbookingapp.air_booking_app.data.response.BookingResponse;
 import com.example.airbookingapp.air_booking_app.services.BookingService;
 import org.springframework.http.ResponseEntity;
@@ -35,7 +36,7 @@ public class BookingController {
     }
 
     // Lấy danh sách tất cả các booking của người dùng hiện tại
-    @GetMapping("/all")
+    @GetMapping
     public ResponseEntity<List<BookingResponse>> getUserBookings(Authentication authentication) {
         List<BookingResponse> bookings = bookingService.getAllBookingsByUser();
         return ResponseEntity.ok(bookings);
@@ -48,12 +49,10 @@ public class BookingController {
         return ResponseEntity.ok("Booking ID " + bookingId + " đã được xóa thành công.");
     }
 
-    // Cập nhật trạng thái thanh toán
-    @PutMapping("/{bookingId}/payment-status")
-    public ResponseEntity<String> updatePaymentStatus(
-            @PathVariable String bookingId,
-            @RequestParam boolean paymentStatus) {
-        bookingService.updatePaymentStatus(bookingId, paymentStatus);
-        return ResponseEntity.ok("Trạng thái thanh toán của Booking ID " + bookingId + " đã được cập nhật.");
+    @PostMapping("/{bookingId}/pay")
+    public ResponseEntity<String> payBooking(@PathVariable String bookingId,
+                                             @RequestBody PaymentRequest paymentRequest) {
+        bookingService.payBooking(bookingId, paymentRequest);
+        return ResponseEntity.ok("Booking ID " + bookingId + " đã được thanh toán.");
     }
 }

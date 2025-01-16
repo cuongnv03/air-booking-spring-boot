@@ -29,7 +29,7 @@ public class BookingRepository {
     }
 
     // Tìm booking theo bookingId
-    public Booking findById(String bookingId) {
+    public Booking findByBookingId(String bookingId) {
         return dsl.selectFrom(Tables.BOOKING)
                 .where(Tables.BOOKING.BOOKING_ID.eq(bookingId))
                 .fetchOneInto(Booking.class);
@@ -64,5 +64,15 @@ public class BookingRepository {
                 .set(Tables.BOOKING.PAYMENT_STATUS, paymentStatus)
                 .where(Tables.BOOKING.BOOKING_ID.eq(bookingId))
                 .execute();
+    }
+
+    public Long getBookedSeatPrice(String bookingId) {
+        return dsl.select(Tables.SEAT.PRICE)
+                .from(Tables.BOOKING)
+                .join(Tables.SEAT)
+                .on(Tables.BOOKING.FLIGHT_ID.eq(Tables.SEAT.FLIGHT_ID)
+                        .and(Tables.BOOKING.SEAT_ID.eq(Tables.SEAT.ID)))
+                .where(Tables.BOOKING.BOOKING_ID.eq(bookingId))
+                .fetchOneInto(Long.class);
     }
 }
