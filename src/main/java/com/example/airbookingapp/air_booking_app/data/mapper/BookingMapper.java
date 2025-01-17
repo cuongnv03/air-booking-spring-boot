@@ -3,7 +3,6 @@ package com.example.airbookingapp.air_booking_app.data.mapper;
 import com.example.airbookingapp.air_booking_app.data.request.BookingRequest;
 import com.example.airbookingapp.air_booking_app.data.response.BookingResponse;
 import com.example.airbookingapp.air_booking_app.jooq.tables.pojos.Booking;
-import com.example.airbookingapp.air_booking_app.jooq.tables.pojos.User;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;

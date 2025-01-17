@@ -2,7 +2,6 @@ package com.example.airbookingapp.air_booking_app.repositories;
 
 import com.example.airbookingapp.air_booking_app.jooq.Tables;
 import com.example.airbookingapp.air_booking_app.jooq.tables.pojos.Booking;
-import com.example.airbookingapp.air_booking_app.jooq.tables.pojos.Flight;
 import com.example.airbookingapp.air_booking_app.jooq.tables.records.BookingRecord;
 import org.jooq.DSLContext;
 import org.springframework.stereotype.Repository;
@@ -58,9 +57,16 @@ public class BookingRepository {
         );
     }
 
+    public void updateAmountPayable(String bookingId, long amountPayable) {
+        dsl.update(Tables.BOOKING)
+                .set(Tables.BOOKING.AMOUNT_PAYABLE, amountPayable)
+                .where(Tables.BOOKING.BOOKING_ID.eq(bookingId))
+                .execute();
+    }
+
     // Cập nhật trạng thái thanh toán
-    public int updatePaymentStatus(String bookingId, boolean paymentStatus) {
-        return dsl.update(Tables.BOOKING)
+    public void updatePaymentStatus(String bookingId, boolean paymentStatus) {
+        dsl.update(Tables.BOOKING)
                 .set(Tables.BOOKING.PAYMENT_STATUS, paymentStatus)
                 .where(Tables.BOOKING.BOOKING_ID.eq(bookingId))
                 .execute();

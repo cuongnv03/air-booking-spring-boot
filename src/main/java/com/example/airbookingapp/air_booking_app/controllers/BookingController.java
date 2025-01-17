@@ -4,6 +4,7 @@ import com.example.airbookingapp.air_booking_app.data.request.BookingRequest;
 import com.example.airbookingapp.air_booking_app.data.request.PaymentRequest;
 import com.example.airbookingapp.air_booking_app.data.response.BookingResponse;
 import com.example.airbookingapp.air_booking_app.services.BookingService;
+import com.example.airbookingapp.air_booking_app.services.PaymentService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -16,16 +17,11 @@ import java.util.List;
 public class BookingController {
 
     private final BookingService bookingService;
+    private final PaymentService paymentService;
 
-    public BookingController(BookingService bookingService) {
+    public BookingController(BookingService bookingService, PaymentService paymentService) {
         this.bookingService = bookingService;
-    }
-
-    // Tạo một booking mới
-    @PostMapping
-    public ResponseEntity<BookingResponse> createBooking(@Valid @RequestBody BookingRequest bookingRequest) {
-        BookingResponse bookingResponse = bookingService.createBooking(bookingRequest);
-        return ResponseEntity.ok(bookingResponse);
+        this.paymentService = paymentService;
     }
 
     // Lấy thông tin một booking theo ID
@@ -42,17 +38,32 @@ public class BookingController {
         return ResponseEntity.ok(bookings);
     }
 
+    // Tạo một booking mới
+    @PostMapping
+    public ResponseEntity<BookingResponse> createBooking(@Valid @RequestBody BookingRequest bookingRequest) {
+        BookingResponse bookingResponse = bookingService.createBooking(bookingRequest);
+        return ResponseEntity.ok(bookingResponse);
+    }
+
+    @PostMapping("/{bookingId}")
+    public ResponseEntity<BookingResponse> changeBooking(@PathVariable String bookingId,
+                                                         @Valid @RequestBody BookingRequest bookingRequest) {
+        BookingResponse bookingResponse = bookingService.changeBooking(bookingId, bookingRequest);
+        return ResponseEntity.ok(bookingResponse);
+    }
+
     // Xóa một booking theo ID
     @DeleteMapping("/{bookingId}")
-    public ResponseEntity<String> deleteBooking(@PathVariable String bookingId) {
-        bookingService.deleteBooking(bookingId);
+    public ResponseEntity<String> cancelBooking(@PathVariable String bookingId,
+                                                @Valid @RequestBody PaymentRequest paymentRequest) {
+        bookingService.cancelBooking(bookingId, paymentRequest);
         return ResponseEntity.ok("Booking ID " + bookingId + " đã được xóa thành công.");
     }
 
     @PostMapping("/{bookingId}/pay")
     public ResponseEntity<String> payBooking(@PathVariable String bookingId,
-                                             @RequestBody PaymentRequest paymentRequest) {
-        bookingService.payBooking(bookingId, paymentRequest);
+                                             @Valid @RequestBody PaymentRequest paymentRequest) {
+        paymentService.processPayment(bookingId, paymentRequest, PaymentService.PaymentAction.PAY);
         return ResponseEntity.ok("Booking ID " + bookingId + " đã được thanh toán.");
     }
 }

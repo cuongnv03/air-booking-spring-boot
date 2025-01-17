@@ -8,17 +8,14 @@ import com.example.airbookingapp.air_booking_app.jooq.tables.pojos.Booking;
 import com.example.airbookingapp.air_booking_app.jooq.tables.pojos.Flight;
 import com.example.airbookingapp.air_booking_app.jooq.tables.pojos.Seat;
 import com.example.airbookingapp.air_booking_app.repositories.BookingRepository;
-import com.example.airbookingapp.air_booking_app.repositories.CardRepository;
 import com.example.airbookingapp.air_booking_app.repositories.FlightRepository;
 import com.example.airbookingapp.air_booking_app.repositories.SeatRepository;
 import com.example.airbookingapp.air_booking_app.security.services.UserDetailsImpl;
 import com.example.airbookingapp.air_booking_app.services.BookingService;
-import org.springframework.data.rest.webmvc.ResourceNotFoundException;
+import com.example.airbookingapp.air_booking_app.services.PaymentService;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -28,18 +25,44 @@ public class BookingServiceImpl implements BookingService {
     private final BookingRepository bookingRepository;
     private final SeatRepository seatRepository;
     private final FlightRepository flightRepository;
-    private final CardRepository cardRepository;
+    private final PaymentService paymentService;
     private final BookingMapper bookingMapper;
 
     public BookingServiceImpl(BookingRepository bookingRepository,
                               SeatRepository seatRepository,
-                              FlightRepository flightRepository, CardRepository cardRepository,
+                              FlightRepository flightRepository, PaymentService paymentService,
                               BookingMapper bookingMapper) {
         this.bookingRepository = bookingRepository;
         this.seatRepository = seatRepository;
         this.flightRepository = flightRepository;
-        this.cardRepository = cardRepository;
+        this.paymentService = paymentService;
         this.bookingMapper = bookingMapper;
+    }
+
+    @Override
+    public BookingResponse getBookingById(String bookingId) {
+        UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext()
+                .getAuthentication()
+                .getPrincipal();
+        Booking booking = bookingRepository.findByBookingId(bookingId);
+        if (booking == null) {
+            throw new RuntimeException("Booking ID " + bookingId + " not found.");
+        }
+        if (!booking.getUserId().equals(userDetails.getUserId())) {
+            throw new RuntimeException("Booking ID " + bookingId + " does not belong to user ID " + userDetails.getUserId());
+        }
+        return bookingMapper.fromPojoToResponse(booking);
+    }
+
+    @Override
+    public List<BookingResponse> getAllBookingsByUser() {
+        UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext()
+                .getAuthentication()
+                .getPrincipal();
+        List<Booking> bookings = bookingRepository.findAllByUserId(userDetails.getUserId());
+        return bookings.stream()
+                .map(bookingMapper::fromPojoToResponse)
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -62,97 +85,76 @@ public class BookingServiceImpl implements BookingService {
         seatRepository.updateSeatStatus(bookingRequest.getFlightId(), bookingRequest.getSeatId(), true);
         // Create booking record
         Booking booking = bookingMapper.fromRequestToPojo(bookingRequest, userDetails.getUserId());
+        booking.setAmountPayable(seat.getPrice());
         Booking savedBooking = bookingRepository.save(booking);
         // Convert to response DTO
         return bookingMapper.fromPojoToResponse(savedBooking);
     }
 
     @Override
-    public BookingResponse getBookingById(String bookingId) {
-        Booking booking = bookingRepository.findByBookingId(bookingId);
-        if (booking == null) {
-            throw new RuntimeException("Booking ID " + bookingId + " not found.");
-        }
-        return bookingMapper.fromPojoToResponse(booking);
-    }
-
-    @Override
-    public List<BookingResponse> getAllBookingsByUser() {
+    public BookingResponse changeBooking(String oldBookingId, BookingRequest newBookingRequest) {
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext()
                 .getAuthentication()
                 .getPrincipal();
-        List<Booking> bookings = bookingRepository.findAllByUserId(userDetails.getUserId());
-        return bookings.stream()
-                .map(bookingMapper::fromPojoToResponse)
-                .collect(Collectors.toList());
+
+        // Validate old booking
+        Booking oldBooking = bookingRepository.findByBookingId(oldBookingId);
+        if (oldBooking == null || !oldBooking.getUserId().equals(userDetails.getUserId())) {
+            throw new RuntimeException("Unauthorized access to booking ID: " + oldBookingId);
+        }
+        // Validate new flight and seat
+        Flight newFlight = flightRepository.findByFlightId(newBookingRequest.getFlightId());
+        if (newFlight == null) {
+            throw new RuntimeException("Flight ID " + newBookingRequest.getFlightId() + " is invalid.");
+        }
+
+        Seat newSeat = seatRepository.findByFlightIdAndSeatId(newBookingRequest.getFlightId(), newBookingRequest.getSeatId());
+        if (newSeat == null || newSeat.getSeatStatus()) {
+            throw new RuntimeException("Seat ID " + newBookingRequest.getSeatId() + " is not available.");
+        }
+
+        if (newSeat.equals(seatRepository.findByFlightIdAndSeatId(oldBooking.getFlightId(), oldBooking.getSeatId()))){
+            throw new RuntimeException("New seat is the same as old seat.");
+        }
+
+        // Create new booking
+        seatRepository.updateSeatStatus(newBookingRequest.getFlightId(), newBookingRequest.getSeatId(), true);
+        Booking newBooking = bookingMapper.fromRequestToPojo(newBookingRequest, userDetails.getUserId());
+
+        if (oldBooking.getPaymentStatus()){
+            newBooking.setAmountPayable(newSeat.getPrice() - bookingRepository.getBookedSeatPrice(oldBookingId));
+            if (newBooking.getAmountPayable() == 0) {
+                newBooking.setPaymentStatus(true);
+            }
+        } else {
+            newBooking.setAmountPayable(newSeat.getPrice());
+        }
+        Booking savedNewBooking = bookingRepository.save(newBooking);
+        // Cancel old booking
+        seatRepository.updateSeatStatus(oldBooking.getFlightId(), oldBooking.getSeatId(), false);
+        bookingRepository.deleteById(oldBooking.getBookingId());
+        return bookingMapper.fromPojoToResponse(savedNewBooking);
     }
 
     // Xóa một booking theo ID
     @Override
-    public void deleteBooking(String bookingId) {
-        boolean deleted = bookingRepository.deleteById(bookingId);
-        if (!deleted) {
-            throw new RuntimeException("Không thể xóa booking với ID: " + bookingId);
-        }
-    }
-
-    // Cập nhật trạng thái thanh toán của booking
-    private void updatePaymentStatus(String bookingId, boolean paymentStatus) {
-        int rowsAffected = bookingRepository.updatePaymentStatus(bookingId, paymentStatus);
-        if (rowsAffected == 0) {
-            throw new RuntimeException("Không thể cập nhật trạng thái thanh toán cho booking với ID: " + bookingId);
-        }
-    }
-
-    private Long getBookedSeatPrice(String bookingId) {
-        Long price = bookingRepository.getBookedSeatPrice(bookingId);
-        if (price == null) {
-            throw new ResourceNotFoundException("Booking or Seat not found with ID: " + bookingId);
-        }
-        return price;
-    }
-
-    @Override
-    @Transactional
-    public void payBooking(String bookingId, PaymentRequest paymentRequest) {
-        // Retrieve authenticated user's details
+    public void cancelBooking(String bookingId, PaymentRequest paymentRequest) {
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext()
                 .getAuthentication()
                 .getPrincipal();
-        // Step 1: Fetch booking details
-        var booking = bookingRepository.findByBookingId(bookingId);
-        if (booking == null) {
-            throw new ResourceNotFoundException("Booking not found with ID: " + bookingId);
+
+        // Validate booking
+        Booking booking = bookingRepository.findByBookingId(bookingId);
+        if (booking == null || !booking.getUserId().equals(userDetails.getUserId())) {
+            throw new RuntimeException("Unauthorized access to booking ID: " + bookingId);
         }
 
         if (booking.getPaymentStatus()) {
-            throw new IllegalStateException("Booking has already been paid.");
+            paymentService.processPayment(bookingId, paymentRequest, PaymentService.PaymentAction.REFUND);
         }
 
-        // Step 2: Fetch seat price
-        Long seatPrice = bookingRepository.getBookedSeatPrice(booking.getBookingId());
-        if (seatPrice == null) {
-            throw new ResourceNotFoundException("Seat price not found for booking ID: " + bookingId);
-        }
-
-        // Step 3: Validate card details
-        var card = cardRepository.findCardByDetails(
-                userDetails.getUserId(),
-                paymentRequest.getCardNumber(),
-                paymentRequest.getCardholderName(),
-                paymentRequest.getCvvCode()
-        );
-        if (card == null) {
-            throw new ResourceNotFoundException("Invalid card details.");
-        }
-
-        // Step 4: Check balance
-        if (card.getBalanceAmount().compareTo(BigDecimal.valueOf(seatPrice)) < 0) {
-            throw new IllegalStateException("Insufficient balance.");
-        }
-
-        // Step 5: Deduct balance and update booking
-        cardRepository.deductBalance(card.getCardNumber(), seatPrice);
-        bookingRepository.updatePaymentStatus(booking.getBookingId(), true);
+        // Cancel booking
+        seatRepository.updateSeatStatus(booking.getFlightId(), booking.getSeatId(), false);
+        bookingRepository.deleteById(booking.getBookingId());
     }
 }

@@ -15,9 +15,8 @@ public interface BookingService {
 
     List<BookingResponse> getAllBookingsByUser();
 
-    // Xóa một booking theo ID
-    void deleteBooking(String bookingId);
+    BookingResponse changeBooking(String bookingId, BookingRequest bookingRequest);
 
-    @Transactional
-    void payBooking(String bookingId, PaymentRequest paymentRequest);
+    // Xóa một booking theo ID
+    void cancelBooking(String bookingId, PaymentRequest paymentRequest);
 }

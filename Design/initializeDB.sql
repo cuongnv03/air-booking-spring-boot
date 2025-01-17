@@ -79,6 +79,7 @@ CREATE TABLE Booking (
     flight_id VARCHAR(10) NOT NULL,
     seat_id INT NOT NULL,
     user_id INT NOT NULL,
+    amount_payable BIGINT,
     payment_status BOOLEAN NOT NULL,
     created_at TIMESTAMP NOT NULL,
     updated_at TIMESTAMP NOT NULL,
