@@ -5,8 +5,7 @@ import com.example.airbookingapp.air_booking_app.data.request.SearchFlightReques
 import com.example.airbookingapp.air_booking_app.data.response.FlightResponse;
 import com.example.airbookingapp.air_booking_app.data.response.PaginatedResponse;
 import com.example.airbookingapp.air_booking_app.services.FlightService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,14 +16,10 @@ import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping
+@RequiredArgsConstructor
 public class FlightController {
 
     private final FlightService flightService;
-
-    @Autowired
-    public FlightController(FlightService flightService) {
-        this.flightService = flightService;
-    }
 
     // Thêm mới chuyến bay
     @PostMapping("/admin/flights")

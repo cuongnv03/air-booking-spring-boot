@@ -5,6 +5,7 @@ import com.example.airbookingapp.air_booking_app.data.request.PaymentRequest;
 import com.example.airbookingapp.air_booking_app.data.response.BookingResponse;
 import com.example.airbookingapp.air_booking_app.services.BookingService;
 import com.example.airbookingapp.air_booking_app.services.PaymentService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -14,15 +15,11 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/bookings")
+@RequiredArgsConstructor
 public class BookingController {
 
     private final BookingService bookingService;
     private final PaymentService paymentService;
-
-    public BookingController(BookingService bookingService, PaymentService paymentService) {
-        this.bookingService = bookingService;
-        this.paymentService = paymentService;
-    }
 
     // Lấy thông tin một booking theo ID
     @GetMapping("/{bookingId}")

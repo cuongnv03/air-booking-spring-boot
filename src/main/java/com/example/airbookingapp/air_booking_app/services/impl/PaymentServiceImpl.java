@@ -6,7 +6,6 @@ import com.example.airbookingapp.air_booking_app.repositories.BookingRepository;
 import com.example.airbookingapp.air_booking_app.repositories.CardRepository;
 import com.example.airbookingapp.air_booking_app.security.services.UserDetailsImpl;
 import com.example.airbookingapp.air_booking_app.services.PaymentService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;

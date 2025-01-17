@@ -6,6 +6,7 @@ import com.example.airbookingapp.air_booking_app.jooq.Tables;
 import org.jooq.DSLContext;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -34,5 +35,14 @@ public class UserRepository {
                 dsl.selectFrom(Tables.USER)
                         .where(Tables.USER.USERNAME.eq(username))
         );
+    }
+
+    public List<Integer> findAffectedUsers(String flightId) {
+        return dsl.selectDistinct(Tables.USER.USER_ID)
+                .from(Tables.USER)
+                .join(Tables.BOOKING)
+                .on(Tables.USER.USER_ID.eq(Tables.BOOKING.USER_ID))
+                .where(Tables.BOOKING.FLIGHT_ID.eq(flightId))
+                .fetchInto(Integer.class);
     }
 }
