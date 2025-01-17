@@ -3,6 +3,7 @@ package com.example.airbookingapp.air_booking_app.repositories;
 import com.example.airbookingapp.air_booking_app.jooq.tables.pojos.User;
 import com.example.airbookingapp.air_booking_app.jooq.tables.records.UserRecord;
 import com.example.airbookingapp.air_booking_app.jooq.Tables;
+import lombok.RequiredArgsConstructor;
 import org.jooq.DSLContext;
 import org.springframework.stereotype.Repository;
 
@@ -10,13 +11,10 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
+@RequiredArgsConstructor
 public class UserRepository {
 
     private final DSLContext dsl;
-
-    public UserRepository(DSLContext dsl) {
-        this.dsl = dsl;
-    }
 
     public User save(User user) {
         UserRecord record = dsl.newRecord(Tables.USER, user);

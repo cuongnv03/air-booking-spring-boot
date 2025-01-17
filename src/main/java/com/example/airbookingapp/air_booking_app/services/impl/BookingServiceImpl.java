@@ -13,6 +13,7 @@ import com.example.airbookingapp.air_booking_app.repositories.SeatRepository;
 import com.example.airbookingapp.air_booking_app.security.services.UserDetailsImpl;
 import com.example.airbookingapp.air_booking_app.services.BookingService;
 import com.example.airbookingapp.air_booking_app.services.PaymentService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
@@ -20,6 +21,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class BookingServiceImpl implements BookingService {
 
     private final BookingRepository bookingRepository;
@@ -27,17 +29,6 @@ public class BookingServiceImpl implements BookingService {
     private final FlightRepository flightRepository;
     private final PaymentService paymentService;
     private final BookingMapper bookingMapper;
-
-    public BookingServiceImpl(BookingRepository bookingRepository,
-                              SeatRepository seatRepository,
-                              FlightRepository flightRepository, PaymentService paymentService,
-                              BookingMapper bookingMapper) {
-        this.bookingRepository = bookingRepository;
-        this.seatRepository = seatRepository;
-        this.flightRepository = flightRepository;
-        this.paymentService = paymentService;
-        this.bookingMapper = bookingMapper;
-    }
 
     @Override
     public BookingResponse getBookingById(String bookingId) {

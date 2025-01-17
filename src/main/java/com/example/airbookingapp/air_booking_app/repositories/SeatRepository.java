@@ -3,19 +3,17 @@ package com.example.airbookingapp.air_booking_app.repositories;
 import com.example.airbookingapp.air_booking_app.jooq.Tables;
 import com.example.airbookingapp.air_booking_app.jooq.tables.pojos.Seat;
 import com.example.airbookingapp.air_booking_app.jooq.tables.records.SeatRecord;
+import lombok.RequiredArgsConstructor;
 import org.jooq.DSLContext;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
 @Repository
+@RequiredArgsConstructor
 public class SeatRepository {
 
     private final DSLContext dsl;
-
-    public SeatRepository(DSLContext dsl) {
-        this.dsl = dsl;
-    }
 
     // Tìm ghế theo flightId và seatId
     public Seat findByFlightIdAndSeatId(String flightId, Integer seatId) {

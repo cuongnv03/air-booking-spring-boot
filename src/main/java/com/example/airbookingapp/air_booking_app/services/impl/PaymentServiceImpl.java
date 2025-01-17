@@ -6,6 +6,7 @@ import com.example.airbookingapp.air_booking_app.repositories.BookingRepository;
 import com.example.airbookingapp.air_booking_app.repositories.CardRepository;
 import com.example.airbookingapp.air_booking_app.security.services.UserDetailsImpl;
 import com.example.airbookingapp.air_booking_app.services.PaymentService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -14,14 +15,10 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 
 @Service
+@RequiredArgsConstructor
 public class PaymentServiceImpl implements PaymentService {
     private final BookingRepository bookingRepository;
     private final CardRepository cardRepository;
-
-    public PaymentServiceImpl(BookingRepository bookingRepository, CardRepository cardRepository) {
-        this.bookingRepository = bookingRepository;
-        this.cardRepository = cardRepository;
-    }
 
     @Override
     @Transactional

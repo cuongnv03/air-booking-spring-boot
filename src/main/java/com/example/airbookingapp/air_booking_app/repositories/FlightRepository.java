@@ -4,6 +4,7 @@ import com.example.airbookingapp.air_booking_app.data.request.SearchFlightReques
 import com.example.airbookingapp.air_booking_app.jooq.Tables;
 import com.example.airbookingapp.air_booking_app.jooq.tables.pojos.Flight;
 import com.example.airbookingapp.air_booking_app.jooq.tables.records.FlightRecord;
+import lombok.RequiredArgsConstructor;
 import org.jooq.Condition;
 import org.jooq.DSLContext;
 import org.jooq.Field;
@@ -14,13 +15,10 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Repository
+@RequiredArgsConstructor
 public class FlightRepository {
 
     private final DSLContext dsl;
-
-    public FlightRepository(DSLContext dsl) {
-        this.dsl = dsl;
-    }
 
     // Lưu một chuyến bay mới
     public Flight save(Flight flight) {

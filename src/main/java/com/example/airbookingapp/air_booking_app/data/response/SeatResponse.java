@@ -1,8 +1,12 @@
 package com.example.airbookingapp.air_booking_app.data.response;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class SeatResponse {
     private Integer seatId; // ID của ghế
     private String seatClass; // Loại ghế: "economy" hoặc "business"

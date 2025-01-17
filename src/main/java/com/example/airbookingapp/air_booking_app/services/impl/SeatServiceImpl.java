@@ -8,6 +8,7 @@ import com.example.airbookingapp.air_booking_app.jooq.tables.pojos.Seat;
 import com.example.airbookingapp.air_booking_app.repositories.FlightRepository;
 import com.example.airbookingapp.air_booking_app.repositories.SeatRepository;
 import com.example.airbookingapp.air_booking_app.services.SeatService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -15,17 +16,12 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class SeatServiceImpl implements SeatService {
 
     private final SeatRepository seatRepository;
     private final SeatMapper seatMapper;
     private final FlightRepository flightRepository;
-
-    public SeatServiceImpl(SeatRepository seatRepository, SeatMapper seatMapper, FlightRepository flightRepository) {
-        this.seatRepository = seatRepository;
-        this.seatMapper = seatMapper;
-        this.flightRepository = flightRepository;
-    }
 
     @Override
     public SeatResponse getSeatDetails(String flightId, Integer seatId) {

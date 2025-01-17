@@ -2,18 +2,14 @@ package com.example.airbookingapp.air_booking_app.repositories;
 
 import com.example.airbookingapp.air_booking_app.jooq.Tables;
 import com.example.airbookingapp.air_booking_app.jooq.tables.pojos.Card;
+import lombok.RequiredArgsConstructor;
 import org.jooq.DSLContext;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 @Repository
+@RequiredArgsConstructor
 public class CardRepository {
     private final DSLContext dsl;
-
-    @Autowired
-    public CardRepository(DSLContext dsl) {
-        this.dsl = dsl;
-    }
 
     public Card findCardByDetails(Integer userId, String cardNumber, String cardholderName, String cvvCode) {
         return dsl.selectFrom(Tables.CARD)

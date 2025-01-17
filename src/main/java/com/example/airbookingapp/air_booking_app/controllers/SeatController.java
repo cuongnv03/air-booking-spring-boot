@@ -4,6 +4,7 @@ import com.example.airbookingapp.air_booking_app.data.request.AddSeatsRequest;
 import com.example.airbookingapp.air_booking_app.data.request.SeatRequest;
 import com.example.airbookingapp.air_booking_app.data.response.SeatResponse;
 import com.example.airbookingapp.air_booking_app.services.SeatService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -13,13 +14,10 @@ import java.util.List;
 
 @RestController
 @RequestMapping
+@RequiredArgsConstructor
 public class SeatController {
 
     private final SeatService seatService;
-
-    public SeatController(SeatService seatService) {
-        this.seatService = seatService;
-    }
 
     // Lấy thông tin ghế theo flightId và seatId
     @GetMapping("/flights/{flightId}/{seatId}")

@@ -3,19 +3,17 @@ package com.example.airbookingapp.air_booking_app.repositories;
 import com.example.airbookingapp.air_booking_app.jooq.Tables;
 import com.example.airbookingapp.air_booking_app.jooq.tables.pojos.Booking;
 import com.example.airbookingapp.air_booking_app.jooq.tables.records.BookingRecord;
+import lombok.RequiredArgsConstructor;
 import org.jooq.DSLContext;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
 @Repository
+@RequiredArgsConstructor
 public class BookingRepository {
 
     private final DSLContext dsl;
-
-    public BookingRepository(DSLContext dsl) {
-        this.dsl = dsl;
-    }
 
     // Lưu một booking mới
     public Booking save(Booking booking) {
