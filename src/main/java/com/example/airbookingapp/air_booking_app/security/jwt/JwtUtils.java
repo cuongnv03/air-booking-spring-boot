@@ -30,6 +30,10 @@ public class JwtUtils {
         return Jwts.parser().setSigningKey(JwtConstants.SECRET).build().parseClaimsJws(token).getBody().getSubject();
     }
 
+    public Date getExpirationDateFromToken(String token) {
+        return Jwts.parser().setSigningKey(Keys.hmacShaKeyFor(Decoders.BASE64.decode(JwtConstants.SECRET))).build().parseClaimsJws(token).getBody().getExpiration();
+    }
+
     public boolean validateJwtToken(String authToken) {
         try {
             Jwts.parser().setSigningKey(JwtConstants.SECRET).build().parse(authToken);

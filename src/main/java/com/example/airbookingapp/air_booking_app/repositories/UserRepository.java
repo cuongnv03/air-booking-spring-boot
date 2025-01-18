@@ -1,5 +1,6 @@
 package com.example.airbookingapp.air_booking_app.repositories;
 
+import com.example.airbookingapp.air_booking_app.jooq.tables.pojos.Ticket;
 import com.example.airbookingapp.air_booking_app.jooq.tables.pojos.User;
 import com.example.airbookingapp.air_booking_app.jooq.tables.records.UserRecord;
 import com.example.airbookingapp.air_booking_app.jooq.Tables;
@@ -42,5 +43,11 @@ public class UserRepository {
                 .on(Tables.USER.USER_ID.eq(Tables.BOOKING.USER_ID))
                 .where(Tables.BOOKING.FLIGHT_ID.eq(flightId))
                 .fetchInto(Integer.class);
+    }
+
+    public List<Ticket> findAllTicketsByUserId(Integer userId) {
+        return dsl.selectFrom(Tables.TICKET)
+                .where(Tables.TICKET.USER_ID.eq(userId))
+                .fetchInto(Ticket.class);
     }
 }

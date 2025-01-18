@@ -2,9 +2,10 @@ package com.example.airbookingapp.air_booking_app.controllers;
 
 import com.example.airbookingapp.air_booking_app.data.request.UserRequest;
 import com.example.airbookingapp.air_booking_app.data.response.NotificationResponse;
+import com.example.airbookingapp.air_booking_app.data.response.TicketResponse;
 import com.example.airbookingapp.air_booking_app.data.response.UserResponse;
-import com.example.airbookingapp.air_booking_app.payload.JwtLoginSuccessResponse;
-import com.example.airbookingapp.air_booking_app.payload.LoginRequest;
+import com.example.airbookingapp.air_booking_app.data.response.JwtLoginSuccessResponse;
+import com.example.airbookingapp.air_booking_app.data.request.LoginRequest;
 import com.example.airbookingapp.air_booking_app.security.jwt.JwtUtils;
 import com.example.airbookingapp.air_booking_app.services.UserService;
 import jakarta.validation.Valid;
@@ -34,7 +35,10 @@ public class AuthController {
         SecurityContextHolder.getContext().setAuthentication(authentication);
         String jwt = jwtUtils.generateJwtToken(authentication);
 
-        return new JwtLoginSuccessResponse(true, jwt);
+        String username = jwtUtils.getUserNameFromJwtToken(jwt); // Retrieve the username from the authentication object
+        String expiryDate = jwtUtils.getExpirationDateFromToken(jwt).toString(); // Assuming jwtUtils can parse expiration date
+
+        return new JwtLoginSuccessResponse(true, jwt, username, expiryDate);
     }
 
     // Register
@@ -43,8 +47,13 @@ public class AuthController {
         return userService.saveUser(userRequest);
     }
 
-    @GetMapping("/noti")
+    @GetMapping("/notifications")
     public List<NotificationResponse> getNotificationsByUserId() {
         return userService.getNotificationsByUserId();
+    }
+
+    @GetMapping("/tickets")
+    public List<TicketResponse> getTicketsByUserId() {
+        return userService.getTicketsByUserId();
     }
 }

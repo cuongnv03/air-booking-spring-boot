@@ -100,6 +100,28 @@ CREATE TABLE Card (
     FOREIGN KEY (user_id) REFERENCES "user"(user_id)
 );
 
+CREATE TABLE notification (
+	noti_id SERIAL PRIMARY KEY,
+    user_id integer NOT NULL,
+    flight_id VARCHAR(10) NOT NULL,
+    noti_type VARCHAR(50) NOT NULL,
+    noti_message TEXT NOT NULL,
+    created_at TIMESTAMP NOT NULL,
+);
+
+CREATE OR REPLACE FUNCTION update_created_at()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.created_at := CURRENT_TIMESTAMP;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER set_created_at
+BEFORE INSERT ON notification
+FOR EACH ROW
+EXECUTE FUNCTION update_created_at();
+
 -- Trigger: Cập nhật số ghế còn lại trong bảng Flights
 CREATE OR REPLACE FUNCTION update_seat_count()
 RETURNS TRIGGER AS $$

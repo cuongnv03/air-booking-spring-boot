@@ -1,4 +1,4 @@
-package com.example.airbookingapp.air_booking_app.payload;
+package com.example.airbookingapp.air_booking_app.data.request;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;

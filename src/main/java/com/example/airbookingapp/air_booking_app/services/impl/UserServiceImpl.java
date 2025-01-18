@@ -1,9 +1,11 @@
 package com.example.airbookingapp.air_booking_app.services.impl;
 
 import com.example.airbookingapp.air_booking_app.data.mapper.NotificationMapper;
+import com.example.airbookingapp.air_booking_app.data.mapper.TicketMapper;
 import com.example.airbookingapp.air_booking_app.data.mapper.UserMapper;
 import com.example.airbookingapp.air_booking_app.data.request.UserRequest;
 import com.example.airbookingapp.air_booking_app.data.response.NotificationResponse;
+import com.example.airbookingapp.air_booking_app.data.response.TicketResponse;
 import com.example.airbookingapp.air_booking_app.data.response.UserResponse;
 import com.example.airbookingapp.air_booking_app.jooq.tables.pojos.User;
 import com.example.airbookingapp.air_booking_app.repositories.NotificationRepository;
@@ -27,6 +29,7 @@ public class UserServiceImpl implements UserService {
     private final PasswordEncoder encoder;
     private final NotificationRepository notificationRepository;
     private final NotificationMapper notificationMapper;
+    private final TicketMapper ticketMapper;
 
     @Override
     public UserResponse saveUser(UserRequest newUserRequest) {
@@ -57,6 +60,16 @@ public class UserServiceImpl implements UserService {
                 .getPrincipal();
         return notificationRepository.findByUserId(userDetails.getUserId()).stream()
                 .map(notificationMapper::fromPojoToResponse)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<TicketResponse> getTicketsByUserId() {
+        UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext()
+                .getAuthentication()
+                .getPrincipal();
+        return userRepository.findAllTicketsByUserId(userDetails.getUserId()).stream()
+                .map(ticketMapper::fromPojoToResponse)
                 .collect(Collectors.toList());
     }
 }
